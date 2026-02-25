@@ -159,14 +159,14 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
             y={0}
             stroke="#999"
             strokeDasharray="5 5"
-            label={{ value: "Baseline (0%)", position: "right", fill: "#999" }}
+            label={{ value: "", position: "right", fill: "#999" }}
           />
 
           {/* Лінія для першого активу */}
           <Line
             type="linear"
             dataKey={symbol1}
-            stroke="#8884d8"
+            stroke="#3b41d3"
             dot={false}
             name={symbol1}
             strokeWidth={2.5}
@@ -177,9 +177,9 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
           <Line
             type="linear"
             dataKey="MIX"
-            stroke="#82ca9d"
+            stroke="#35c55b"
             dot={false}
-            name="MIX Index (BTC + ETH + SOL)"
+            name="BTC + ETH + SOL"
             strokeWidth={2.5}
             isAnimationActive={true}
           />

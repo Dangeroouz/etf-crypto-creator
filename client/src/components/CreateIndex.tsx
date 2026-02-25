@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import StepOne from "./create-wizard/StepOne";
 import StepTwo from "./create-wizard/StepTwo";
 import StepThree from "./create-wizard/StepThree";
@@ -6,6 +7,7 @@ import StepFour from "./create-wizard/StepFour";
 import { useSelectedCryptos } from "../store/cryptoStore";
 export const CreateIndex = () => {
   const [stage, setStage] = useState(1);
+  const navigate = useNavigate();
   const stagesNames = [
     "Choose Cryptocurrencies",
     "Assign Weights",
@@ -22,6 +24,12 @@ export const CreateIndex = () => {
   const nextStage = () => {
     if (stage < 4) {
       setStage(stage + 1);
+    } else if (stage === 4) {
+      // Зберігаємо індекс
+      saveIndex();
+      // Перенаправляємо на сторінку деталей індексу
+      const encodedIndexName = encodeURIComponent(name);
+      navigate(`/my-indices/${encodedIndexName}`);
     }
   };
   const prevStage = () => {
@@ -31,10 +39,34 @@ export const CreateIndex = () => {
   };
   const selectedCryptos = useSelectedCryptos((s) => s.selected);
   const total = useSelectedCryptos((s) => s.total);
+  const name = useSelectedCryptos((s) => s.name);
+  const saveIndex = useSelectedCryptos((s) => s.saveIndex);
+  const backtestSettings = useSelectedCryptos((s) => s.backtestSettings);
+
+  // Check if rebalancing is valid for period
+  const periodToMonths: { [key: string]: number } = {
+    "1M": 1,
+    "3M": 3,
+    "6M": 6,
+    "1Y": 12,
+    "3Y": 36,
+    "5Y": 60,
+  };
+  const rebalancingToMonths: { [key: string]: number } = {
+    "None": 0,
+    "Monthly": 1,
+    "Quarterly": 3,
+    "Yearly": 12,
+  };
+  const currentPeriodMonths = periodToMonths[backtestSettings.period] || 12;
+  const currentRebalanceMonths = rebalancingToMonths[backtestSettings.rebalancingFrequency] || 0;
+  const isRebalancingValid = currentRebalanceMonths <= currentPeriodMonths;
+
   const isNextDisabled = 
   (stage === 1 && selectedCryptos.length <2) || 
-  stage === 2 && total !== 100 ||
-  stage === 4;
+  (stage === 2 && total !== 100) ||
+  (stage === 3 && !isRebalancingValid) ||
+  (stage === 4 && name.trim() === "");
   return (
     <div className="container max-w-6xl mx-auto">
       <div className=" bg-white p-4 rounded-xl border border-black/10 mb-4">
@@ -75,7 +107,7 @@ export const CreateIndex = () => {
             {stagesSubNames[stage - 1]}
           </p>
         </div>
-        <div className="p-4">
+        <div className="p-2">
             {stage === 1 ? <StepOne /> : null}
             {stage === 2 ? <StepTwo /> : null}
             {stage === 3 ? <StepThree /> : null}

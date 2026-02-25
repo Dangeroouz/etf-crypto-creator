@@ -1,7 +1,7 @@
 import { allCrypto, useSelectedCryptos } from "../../store/cryptoStore";
 import { tokenIcons } from "../../store/cryptoIcons";
 import { useCryptoStore } from "../../store/cryptoStore";
-import { useState, useEffect, } from "react";
+import { useEffect, } from "react";
 const StepTwo = () => {
   const cryptoData = useCryptoStore((s) => s.crypto);
   const selectedCryptos = useSelectedCryptos((s) => s.selected);
@@ -9,6 +9,8 @@ const StepTwo = () => {
   const setTotal = useSelectedCryptos((s) => s.setTotal);
   const weights = useSelectedCryptos((s) => s.weights);
   const setWeights = useSelectedCryptos((s) => s.setWeights);
+  const initialInvestment = useSelectedCryptos((s) => s.initialInvestment);
+  const setInitialInvestment = useSelectedCryptos((s) => s.setInitialInvestment);
 
   function getEqualWeights(selectedCount: number): number[] {
   if (selectedCount <= 0) return [];
@@ -37,15 +39,30 @@ const StepTwo = () => {
 
   return (
     <div>
+      <div className="w-full mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Initial Investment ($)
+        </label>
+        <input
+          type="number"
+          value={initialInvestment}
+          onChange={(e) => setInitialInvestment(Number(e.target.value))}
+          min={1}
+          step={100}
+          className="w-full border border-black/20 rounded-lg p-3"
+          placeholder="Enter initial investment amount"
+        />
+      </div>
       <div className="w-full mb-4">
         <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-indigo-500 transition-all duration-300"
+            className={`h-full bg-indigo-500 transition-all duration-300 ${total > 100 ? 'bg-red-600' : 'bg-indigo-500'}`}
             style={{ width: `${Math.min(100, weights.reduce((a, b) => a + b, 0))}%` }}
           ></div>
         </div>
         <p className="text-sm text-gray-600 mt-1">
           Total: {weights.reduce((a, b) => a + b, 0)}%
+          {total > 100 && (<span className="text-red-600"> (Exceeds 100%)</span>)}
         </p>
       </div>
       <div className="grid grid-cols-12 gap-4 text-sm text-gray-700 pb-2 border-gray-200 border-b mb-4 px-2">

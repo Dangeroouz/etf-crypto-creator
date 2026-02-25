@@ -107,106 +107,7 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
 
   return (
     <div style={{ width: "100%", margin: "30px auto", padding: "20px" }}>
-      <div
-        style={{
-          backgroundColor: "#f9f9f9",
-          padding: "20px",
-          borderRadius: "8px",
-          marginBottom: "20px",
-        }}
-      >
-        <h2>📊 Performance Comparison: {symbol1} vs {symbol2}</h2>
-        <p style={{ color: "#666", marginBottom: "15px" }}>
-          Обидва активи стартують з 100%. Графік показує % зміну від першого
-          дня. Якщо лінії перетинаються - значить один актив переважав іншого.
-        </p>
-
-        {stats && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "15px",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: "white",
-                padding: "15px",
-                borderLeft: "4px solid #8884d8",
-                borderRadius: "4px",
-              }}
-            >
-              <h3 style={{ marginBottom: "10px" }}>{symbol1}</h3>
-              <p>
-                📈 Загальний перформанс:{" "}
-                <span
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "bold",
-                    color:
-                      stats[symbol1].totalPerformance > 0
-                        ? "#82ca9d"
-                        : "#ff7c7c",
-                  }}
-                >
-                  {formatPercentage(stats[symbol1].totalPerformance)}
-                </span>
-              </p>
-              <p>
-                📊 Най-кращий день:{" "}
-                <span style={{ color: "#82ca9d", fontWeight: "bold" }}>
-                  +{stats[symbol1].bestDay.toFixed(2)}%
-                </span>
-              </p>
-              <p>
-                📉 Най-гірший день:{" "}
-                <span style={{ color: "#ff7c7c", fontWeight: "bold" }}>
-                  {stats[symbol1].worstDay.toFixed(2)}%
-                </span>
-              </p>
-            </div>
-
-            <div
-              style={{
-                backgroundColor: "white",
-                padding: "15px",
-                borderLeft: "4px solid #82ca9d",
-                borderRadius: "4px",
-              }}
-            >
-              <h3 style={{ marginBottom: "10px" }}>{symbol2}</h3>
-              <p>
-                📈 Загальний перформанс:{" "}
-                <span
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "bold",
-                    color:
-                      stats[symbol2].totalPerformance > 0
-                        ? "#82ca9d"
-                        : "#ff7c7c",
-                  }}
-                >
-                  {formatPercentage(stats[symbol2].totalPerformance)}
-                </span>
-              </p>
-              <p>
-                📊 Най-кращий день:{" "}
-                <span style={{ color: "#82ca9d", fontWeight: "bold" }}>
-                  +{stats[symbol2].bestDay.toFixed(2)}%
-                </span>
-              </p>
-              <p>
-                📉 Най-гірший день:{" "}
-                <span style={{ color: "#ff7c7c", fontWeight: "bold" }}>
-                  {stats[symbol2].worstDay.toFixed(2)}%
-                </span>
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+      
 
       <ResponsiveContainer width="100%" height={450}>
         <LineChart
@@ -259,7 +160,7 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
           <Line
             type="monotone"
             dataKey={symbol1}
-            stroke="#8884d8"
+            stroke="#3b41d3"
             dot={false}
             name={symbol1}
             strokeWidth={2.5}
@@ -270,7 +171,7 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
           <Line
             type="monotone"
             dataKey={symbol2}
-            stroke="#82ca9d"
+            stroke="#35c55b"
             dot={false}
             name={symbol2}
             strokeWidth={2.5}

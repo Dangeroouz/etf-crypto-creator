@@ -31,7 +31,7 @@ const StepOne = () => {
               }
             }}
           >
-            <div className="flex items-center justify-between mb-2 border-b-1 border-black/10 pb-4">
+            <div className="flex items-center justify-between mb-2 border-b border-black/10 pb-4">
               <div className="flex gap-4 ">
                 {(() => {
                   const Icon = tokenIcons[allCrypto[index].symbol];
@@ -54,14 +54,14 @@ const StepOne = () => {
                 : <Plus size={20} className="text-black/80" />}
               </div>
             </div>
-            <div className="grid grid-cols-2">
+            <div className="grid grid-cols-2 grid-rows-1">
               <div className="">
                 <p className="text-black/60 text-sm">Price</p>
                 <p className="text-black text-lg ">
                   ${crypto.price.toFixed(2)}
                 </p>
               </div>
-              <div className="">
+              <div className="flex flex-col items-end justify-end">
                 <p className="text-black/60 text-sm">24h Change</p>
                 <p
                   className={`text-sm ${

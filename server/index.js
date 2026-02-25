@@ -110,21 +110,52 @@ app.get("/api/history/:symbol", async (req, res) => {
   try {
     console.log(`Fetching real data for ${symbol} (${days || 1095} days)...`);
     
-    const now = Date.now();
     const daysToShow = parseInt(days) || 1095;
-    const startDate = now - (daysToShow * 24 * 60 * 60 * 1000);
+    // Binance API limit is 1000 candles per request
+    // We need to fetch multiple times to get older data
+    const allKlines = [];
+    let endTime = undefined; // undefined means fetch the most recent data
+    const requestsNeeded = Math.ceil(daysToShow / 1000);
     
-    const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=1d&startTime=${Math.floor(startDate)}&limit=3000`
-    );
+    console.log(`Need ${requestsNeeded} requests to fetch ${daysToShow} days of data`);
     
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    for (let i = 0; i < requestsNeeded; i++) {
+      let url = `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=1d&limit=1000`;
+      if (endTime) {
+        url += `&endTime=${endTime}`;
+      }
+      
+      console.log(`Fetching batch ${i + 1}/${requestsNeeded}...`);
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const klines = await response.json();
+      
+      if (klines.length === 0) {
+        console.log(`No more data available for ${symbol}`);
+        break;
+      }
+      
+      // Add to beginning (since we're fetching backwards)
+      allKlines.unshift(...klines);
+      
+      // Set endTime to the beginning of this batch for the next request
+      endTime = klines[0][0] - 1; // Subtract 1 to avoid overlap
+      
+      // If we got fewer than 1000, we've reached the beginning
+      if (klines.length < 1000) {
+        console.log(`Reached the beginning of data at ${new Date(klines[0][0]).toISOString()}`);
+        break;
+      }
     }
     
-    const klines = await response.json();
+    // Take the last daysToShow records
+    const recentKlines = allKlines.slice(-daysToShow);
     
-    const data = klines.map(item => ({
+    const data = recentKlines.map(item => ({
       date: new Date(item[0]).toISOString().split('T')[0],
       open: parseFloat(item[1]),
       high: parseFloat(item[2]),
@@ -133,7 +164,7 @@ app.get("/api/history/:symbol", async (req, res) => {
       volume: parseFloat(item[7]),
     }));
     
-    console.log(`Returned ${data.length} real data points from Binance`);
+    console.log(`Requested ${daysToShow} days, returned ${data.length} real data points from Binance (range: ${data[0]?.date || 'N/A'} to ${data[data.length - 1]?.date || 'N/A'})`);
     res.json(data);
   } catch (error) {
     console.error("Error:", error.message);

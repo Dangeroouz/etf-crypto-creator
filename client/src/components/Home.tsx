@@ -19,7 +19,7 @@ export const Home = () => {
           Create diversified cryptocurrency portfolios, run historical
           backtests, and compare <br /> performance against major benchmarks.
         </p>
-        <div className="flex justify-center gap-4 mt-8">
+        <div className="flex justify-center items-center gap-4 mt-8">
           <Link
             to="/create"
             className="text-sm sm:text-md inline-block px-6 py-1.5 bg-linear-to-r from-blue-600 to-indigo-500 text-white font-semibold rounded-md shadow-md hover:from-indigo-700 hover:to-teal-600 transition duration-300 ease-in-out transform "
@@ -36,6 +36,36 @@ export const Home = () => {
         <section className="bg-white p-4 rounded-xl border border-black/10 mt-16" style={{ padding: "20px", backgroundColor: "#fafafa" }}>
           <PerformanceChartHome symbol1="BTC" symbol2="ETH" days={10} />
         </section>
+        <div className="flex justify-center mt-12 gap-6 md:flex-nowrap flex-wrap">
+          <div className="bg-white p-4 rounded-xl border border-black/10">
+            <TrendingUp size={48} className="text-indigo-600 mx-auto" />
+            <h2 className="text-lg md:text-xl text-gray-800 text-center mt-4">
+              Start Building Your Index 
+            </h2>
+            <p className="text-sm md:text-md text-gray-400 text-center mt-2">
+              Join our platform to create and manage your own cryptocurrency
+              indices with ease.
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-black/10">
+            <BarChart2 size={48} className="text-indigo-600 mx-auto" />
+            <h2 className="text-lg md:text-xl text-gray-800 text-center mt-4">
+              Historical Backtesting
+            </h2>
+            <p className="text-sm md:text-md text-gray-400 text-center mt-2">
+              Test your portfolio strategy against historical data with various rebalancing options.
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-black/10">
+            <BarChart3 size={48} className="text-indigo-600 mx-auto" />
+            <h2 className="text-lg md:text-xl text-gray-800 text-center mt-4">
+              Performance Analytics
+            </h2>
+            <p className="text-sm md:text-md text-gray-400 text-center mt-2">
+              Comprehensive metrics including returns, volatility, Sharpe ratio, and drawdowns.
+            </p>
+          </div>
+        </div>
         <div className="mt-8">
           <h2 className="text-2xl text-gray-800">Trending Cryptocurrencies</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
@@ -81,36 +111,7 @@ export const Home = () => {
             ))}
           </div>
         </div>
-        <div className="flex justify-center mt-12 gap-6 md:flex-nowrap flex-wrap">
-          <div className="bg-white p-4 rounded-xl border border-black/10">
-            <TrendingUp size={48} className="text-indigo-600 mx-auto" />
-            <h2 className="text-lg md:text-xl text-gray-800 text-center mt-4">
-              Start Building Your Index 
-            </h2>
-            <p className="text-sm md:text-md text-gray-400 text-center mt-2">
-              Join our platform to create and manage your own cryptocurrency
-              indices with ease.
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-black/10">
-            <BarChart2 size={48} className="text-indigo-600 mx-auto" />
-            <h2 className="text-lg md:text-xl text-gray-800 text-center mt-4">
-              Historical Backtesting
-            </h2>
-            <p className="text-sm md:text-md text-gray-400 text-center mt-2">
-              Test your portfolio strategy against historical data with various rebalancing options.
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-black/10">
-            <BarChart3 size={48} className="text-indigo-600 mx-auto" />
-            <h2 className="text-lg md:text-xl text-gray-800 text-center mt-4">
-              Performance Analytics
-            </h2>
-            <p className="text-sm md:text-md text-gray-400 text-center mt-2">
-              Comprehensive metrics including returns, volatility, Sharpe ratio, and drawdowns.
-            </p>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

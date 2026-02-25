@@ -20,7 +20,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-1 grpup cursor-pointer">
             <span className="text-lg sm:text-xl md:text-2xl font-medium">
               <Link to="/" className="text-gray-500 text-lg font-semibold">
-                ETF Builder
+                Crypto Index Builder
               </Link>
             </span>
           </div>
