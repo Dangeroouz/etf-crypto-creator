@@ -7,6 +7,8 @@ const StepTwo = () => {
   const selectedCryptos = useSelectedCryptos((s) => s.selected);
   let total = useSelectedCryptos((s) => s.total);
   const setTotal = useSelectedCryptos((s) => s.setTotal);
+  const name = useSelectedCryptos((s) => s.name);
+  const setName = useSelectedCryptos((s) => s.setName);
   const weights = useSelectedCryptos((s) => s.weights);
   const setWeights = useSelectedCryptos((s) => s.setWeights);
   const initialInvestment = useSelectedCryptos((s) => s.initialInvestment);
@@ -41,13 +43,26 @@ const StepTwo = () => {
     <div>
       <div className="w-full mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
+          Index Name *
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g., My Diversified Crypto Portfolio"
+          className="w-full border border-black/20 rounded-lg p-3"
+        />
+      </div>
+
+      <div className="w-full mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           Initial Investment ($)
         </label>
         <input
           type="number"
-          value={initialInvestment}
-          onChange={(e) => setInitialInvestment(Number(e.target.value))}
-          min={1}
+          value={initialInvestment || ''}
+          onChange={(e) => setInitialInvestment(e.target.value === '' ? 0 : Number(e.target.value))}
+          min={0}
           step={100}
           className="w-full border border-black/20 rounded-lg p-3"
           placeholder="Enter initial investment amount"
@@ -97,9 +112,9 @@ const StepTwo = () => {
           </div>
           <div className="col-span-3">
             <input
-              value={weights[index]}
+              value={weights[index] || ''}
               onChange={(e) => {
-                const newVal = Number(e.target.value);
+                const newVal = e.target.value === '' ? 0 : Number(e.target.value);
                 const newWeights = [...weights];
                 newWeights[index] = newVal;
                 setWeights(newWeights);

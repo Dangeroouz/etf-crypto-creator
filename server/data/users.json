@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1773249786513",
+    "email": "dangerchannle@gmail.com",
+    "password": "$2b$10$XyfGnwJ3QqED3W3wJbSNR.gZAIf36Q1VHMuge3bA/OhcTf9CfqKfm",
+    "createdAt": "2026-03-11T17:23:06.513Z"
+  },
+  {
+    "id": "1773249878485",
+    "email": "an@gmail.com",
+    "password": "$2b$10$C9iMOpqGJANzIGmeE0pi8.iMpkirpQBxXDsAGMe47g.rIh7/suWeu",
+    "createdAt": "2026-03-11T17:24:38.485Z"
+  },
+  {
+    "id": "1773755754649",
+    "email": "adsfasd@gami.com",
+    "password": "$2b$10$xMTSg4K03MtBasherK4wO.hJWEuYXFml3SpT5p5bFRG37rub4/b/m",
+    "createdAt": "2026-03-17T13:55:54.649Z"
+  }
+]

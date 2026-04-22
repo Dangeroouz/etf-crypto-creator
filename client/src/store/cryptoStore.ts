@@ -29,13 +29,6 @@ interface CreatedIndex {
   selected: string[];
   weights: number[];
   initialInvestment: number;
-  backtestSettings: {
-    period: string;
-    benchmark: string;
-    rebalancingFrequency: string;
-    customDate?: string;
-  };
-  backtestResult?: BacktestResult;
   createdAt: Date;
 }
 
@@ -44,27 +37,17 @@ interface SelectedCryptoStore {
   total: number;
   weights: number[];
   initialInvestment: number;
-  backtestSettings: {
-    period: string; // Either "1M", "3M", "6M", "1Y", "3Y", "5Y" or "Custom" (when customDate is used)
-    benchmark: string;
-    rebalancingFrequency: string;
-    customDate?: string; // Only set when period is "Custom"
-  };
   name: string;
   createdIndices: CreatedIndex[];
   setName: (name: string) => void;
   setInitialInvestment: (investment: number) => void;
-  setBacktestPeriod: (period: string) => void;
-  setBacktestBenchmark: (benchmark: string) => void;
-  setBacktestRebalancingFrequency: (rebalancingFrequency: string) => void;
-  setBacktestCustomDate: (customDate: string | undefined) => void;
   setWeights: (weights: number[]) => void;
   setTotal: (num: number) => void;
   addCrypto: (symbol: string) => void;
   removeCrypto: (symbol: string) => void;
   saveIndex: () => void;
+  resetForm: () => void;
   getIndexByName: (name: string) => CreatedIndex | undefined;
-  updateIndexBacktestResult: (indexId: string, result: BacktestResult) => void;
 }
 
 export const allCrypto = [
@@ -83,12 +66,6 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
   weights: [],
   total: 0,
   initialInvestment: 1000,
-  backtestSettings: {
-    period: "1M",
-    benchmark: "BTC",
-    rebalancingFrequency: "None",
-    customDate: undefined,
-  },
   name: "",
   createdIndices: [],
   setName: (name: string) =>
@@ -99,64 +76,6 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
     set(() => ({
       initialInvestment: investment,
     })),
-  setBacktestPeriod: (period: string) =>
-    set((state) => {
-      // Define period to months
-      const periodToMonths: { [key: string]: number } = {
-        "1M": 1,
-        "3M": 3,
-        "6M": 6,
-        "1Y": 12,
-        "3Y": 36,
-        "5Y": 60,
-      };
-      const rebalancingToMonths: { [key: string]: number } = {
-        "None": 0,
-        "Monthly": 1,
-        "Quarterly": 3,
-        "Yearly": 12,
-      };
-      const newPeriodMonths = periodToMonths[period] || 12;
-      const currentRebalanceMonths = rebalancingToMonths[state.backtestSettings.rebalancingFrequency] || 0;
-      const newRebalancing = currentRebalanceMonths <= newPeriodMonths ? state.backtestSettings.rebalancingFrequency : "None";
-      
-      // When selecting a preset period, clear custom date
-      return {
-        backtestSettings: {
-          ...state.backtestSettings,
-          period,
-          rebalancingFrequency: newRebalancing,
-          customDate: undefined, // Clear custom date when preset period is selected
-        },
-      };
-    }),
-  setBacktestBenchmark: (benchmark: string) =>
-    set((state) => ({
-      backtestSettings: {
-        ...state.backtestSettings,
-        benchmark,
-      },
-    })),
-  setBacktestRebalancingFrequency: (rebalancingFrequency: string) =>
-    set((state) => ({
-      backtestSettings: {
-        ...state.backtestSettings,
-        rebalancingFrequency,
-      },
-    })),
-  setBacktestCustomDate: (customDate: string | undefined) =>
-    set((state) => {
-      // When setting custom date, change period to "Custom"
-      // When clearing custom date (undefined), revert to default period "1M"
-      const newPeriod = customDate ? "Custom" : "1M";
-      return {
-        backtestSettings: {
-          ...state.backtestSettings,
-          customDate,
-          period: newPeriod,
-        },
-      };
-    }),
   setWeights: (weights: number[]) =>
     set(() => ({
       weights: weights,
@@ -180,7 +99,6 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
       name: state.name,
       selected: state.selected,
       weights: state.weights,
-      backtestSettings: state.backtestSettings,
       initialInvestment: state.initialInvestment,
       createdAt: new Date(),
     };
@@ -191,25 +109,21 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
       weights: [],
       total: 0,
       initialInvestment: 1000,
-      backtestSettings: {
-        period: "1M",
-        benchmark: "BTC",
-        rebalancingFrequency: "None",
-        customDate: undefined,
-      },
+      name: "",
+    }));
+  },
+  resetForm: () => {
+    set(() => ({
+      selected: [],
+      weights: [],
+      total: 0,
+      initialInvestment: 1000,
       name: "",
     }));
   },
   getIndexByName: (name: string) => {
     const state = get();
     return state.createdIndices.find((idx) => idx.name === name);
-  },
-  updateIndexBacktestResult: (indexId: string, result: BacktestResult) => {
-    set((state) => ({
-      createdIndices: state.createdIndices.map((idx) =>
-        idx.id === indexId ? { ...idx, backtestResult: result } : idx
-      ),
-    }));
   },
 }));
 

@@ -1,0 +1,135 @@
+[
+  {
+    "id": "1773828103292",
+    "userId": "1773755754649",
+    "name": "ьь",
+    "selected": [
+      "BTC",
+      "ETH",
+      "ADA",
+      "DOT"
+    ],
+    "weights": [
+      25,
+      25,
+      25,
+      25
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2026-03-18T10:01:43.292Z"
+  },
+  {
+    "id": "1773828307742",
+    "userId": "1773755754649",
+    "name": "Index 1",
+    "selected": [
+      "BTC",
+      "SOL",
+      "AVAX"
+    ],
+    "weights": [
+      34,
+      33,
+      33
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2026-02-18T10:05:07.742Z"
+  },
+  {
+    "id": "1774006999816",
+    "userId": "1773755754649",
+    "name": "bigindex",
+    "selected": [
+      "BTC",
+      "ETH",
+      "SOL",
+      "ADA",
+      "DOT",
+      "AVAX",
+      "LINK"
+    ],
+    "weights": [
+      15,
+      15,
+      14,
+      14,
+      14,
+      14,
+      14
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2026-02-20T11:43:19.816Z"
+  },
+  {
+    "id": "1774963767969",
+    "userId": "1773249878485",
+    "name": "index1",
+    "selected": [
+      "BTC",
+      "ETH",
+      "ADA"
+    ],
+    "weights": [
+      34,
+      33,
+      33
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2025-03-31T13:29:27.969Z"
+  },
+  {
+    "id": "1775300755260",
+    "userId": "1773249878485",
+    "name": "вв",
+    "selected": [
+      "BTC",
+      "ETH",
+      "ADA",
+      "DOT",
+      "LINK"
+    ],
+    "weights": [
+      20,
+      20,
+      20,
+      20,
+      20
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2026-04-04T11:05:55.260Z"
+  },
+  {
+    "id": "1775301936133",
+    "userId": "1773249878485",
+    "name": "рпп",
+    "selected": [
+      "SOL",
+      "BTC",
+      "AVAX"
+    ],
+    "weights": [
+      34,
+      33,
+      33
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2026-04-04T11:25:36.133Z"
+  },
+  {
+    "id": "1776867087579",
+    "userId": "1773249878485",
+    "name": "BIG3",
+    "selected": [
+      "BTC",
+      "SOL",
+      "ETH"
+    ],
+    "weights": [
+      60,
+      20,
+      20
+    ],
+    "initialInvestment": 1000,
+    "createdAt": "2026-04-22T14:11:27.579Z"
+  }
+]

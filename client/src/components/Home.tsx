@@ -1,13 +1,32 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCryptoStore } from "../store/cryptoStore";
 import { allCrypto} from "../store/cryptoStore";
 import { tokenIcons } from "../store/cryptoIcons";
+import useAuthStore from "../store/authStore";
 
 import { ArrowDownRight, ArrowUpRight, TrendingUp, BarChart2, BarChart3 } from "lucide-react";
 import PerformanceChartHome from "./PerformanceHome";
-export const Home = () => {
 
+export const Home = () => {
+  const navigate = useNavigate();
   const cryptoData = useCryptoStore((s) => s.crypto);
+  const { isAuthenticated } = useAuthStore();
+
+  const handleCreateClick = () => {
+    if (isAuthenticated) {
+      navigate("/create");
+    } else {
+      navigate("/login");
+    }
+  };
+
+  const handleMyIndicesClick = () => {
+    if (isAuthenticated) {
+      navigate("/my-indices");
+    } else {
+      navigate("/login");
+    }
+  };
   
   return (
     <div className="min-h-screen sm:p-8">
@@ -20,18 +39,18 @@ export const Home = () => {
           backtests, and compare <br /> performance against major benchmarks.
         </p>
         <div className="flex justify-center items-center gap-4 mt-8">
-          <Link
-            to="/create"
-            className="text-sm sm:text-md inline-block px-6 py-1.5 bg-linear-to-r from-blue-600 to-indigo-500 text-white font-semibold rounded-md shadow-md hover:from-indigo-700 hover:to-teal-600 transition duration-300 ease-in-out transform "
+          <button
+            onClick={handleCreateClick}
+            className="text-sm sm:text-md inline-block px-6 py-1.5 bg-linear-to-r from-blue-600 to-indigo-500 text-white font-semibold rounded-md shadow-md hover:from-indigo-700 hover:to-teal-600 transition duration-300 ease-in-out transform cursor-pointer"
           >
             Create New Index
-          </Link>
-          <Link
-            to="/my-indices"
-            className="text-sm sm:text-md inline-block px-6 py-1.5 bg-white border border-gray-200  text-black font-semibold rounded-md shadow-md hover:from-green-700 hover:to-teal-600 transition duration-300 ease-in-out transform hover:bg-gray-100"
+          </button>
+          <button
+            onClick={handleMyIndicesClick}
+            className="text-sm sm:text-md inline-block px-6 py-1.5 bg-white border border-gray-200 text-black font-semibold rounded-md shadow-md hover:bg-gray-100 transition duration-300 ease-in-out transform cursor-pointer"
           >
             View My Indices
-          </Link>
+          </button>
         </div>
         <section className="bg-white p-4 rounded-xl border border-black/10 mt-16" style={{ padding: "20px", backgroundColor: "#fafafa" }}>
           <PerformanceChartHome symbol1="BTC" symbol2="ETH" days={10} />

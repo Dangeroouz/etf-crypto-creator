@@ -123,11 +123,18 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: 12 }}
             interval={Math.floor(data.length / 10) || 0}
+            tickFormatter={(value) => {
+    const date = new Date(value);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}`;
+  }}
           />
           <YAxis
-            label={{ value: "Performance (%)", angle: -90, position: "insideLeft" }}
+            label={{ value: "% Performance", angle: -90, position: "insideLeft" }}
+            tickFormatter={(value, index) => (index === 0 ? '' : value)}
             
           />
           <Tooltip
