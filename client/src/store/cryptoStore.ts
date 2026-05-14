@@ -45,9 +45,7 @@ interface SelectedCryptoStore {
   setTotal: (num: number) => void;
   addCrypto: (symbol: string) => void;
   removeCrypto: (symbol: string) => void;
-  saveIndex: () => void;
   resetForm: () => void;
-  getIndexByName: (name: string) => CreatedIndex | undefined;
 }
 
 export const allCrypto = [
@@ -92,26 +90,6 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
     set((state) => ({
       selected: state.selected.filter((sym: string) => sym !== symbol),
     })),
-  saveIndex: () => {
-    const state = get();
-    const newIndex: CreatedIndex = {
-      id: Date.now().toString(),
-      name: state.name,
-      selected: state.selected,
-      weights: state.weights,
-      initialInvestment: state.initialInvestment,
-      createdAt: new Date(),
-    };
-    set((state) => ({
-      createdIndices: [...state.createdIndices, newIndex],
-      // Reset all fields to defaults
-      selected: [],
-      weights: [],
-      total: 0,
-      initialInvestment: 1000,
-      name: "",
-    }));
-  },
   resetForm: () => {
     set(() => ({
       selected: [],
@@ -120,10 +98,6 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
       initialInvestment: 1000,
       name: "",
     }));
-  },
-  getIndexByName: (name: string) => {
-    const state = get();
-    return state.createdIndices.find((idx) => idx.name === name);
   },
 }));
 

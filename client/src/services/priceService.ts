@@ -40,66 +40,6 @@ async function handleApiError(response: Response): Promise<never> {
 }
 
 /**
- * Отримує поточну ціну закриття для символу з retry логікою
- * @param {string} symbol - Тікер (наприклад, AAPL, BTC)
- * @returns {Promise<PriceResponse>}
- */
-export async function getCurrentPrice(symbol: string): Promise<PriceResponse> {
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/price/${symbol}`);
-
-      if (!response.ok) {
-        await handleApiError(response);
-      }
-
-      return await response.json();
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      // Якщо це не остання спроба, чекаємо перед наступним запитом
-      if (attempt < MAX_RETRIES - 1) {
-        await delay(RETRY_DELAY * (attempt + 1)); // Експоненціальна затримка
-      }
-    }
-  }
-
-  throw lastError || new Error('Невідома помилка при отриманні ціни');
-}
-
-/**
- * Отримує ціну закриття для конкретної дати
- * @param {string} symbol - Тікер (наприклад, AAPL, BTC)
- * @param {string} date - Дата у форматі YYYY-MM-DD
- * @returns {Promise<PriceResponse>}
- */
-export async function getPriceByDate(symbol: string, date: string): Promise<PriceResponse> {
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/price/${symbol}/${date}`);
-
-      if (!response.ok) {
-        await handleApiError(response);
-      }
-
-      return await response.json();
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      if (attempt < MAX_RETRIES - 1) {
-        await delay(RETRY_DELAY * (attempt + 1));
-      }
-    }
-  }
-
-  throw lastError || new Error(`Помилка при отриманні ціни для ${date}`);
-}
-
-/**
  * Отримує ціни закриття для кількох днів з retry логікою
  * @param {string} symbol - Тікер (наприклад, AAPL, BTC)
  * @param {string[]} dates - Масив дат у форматі YYYY-MM-DD

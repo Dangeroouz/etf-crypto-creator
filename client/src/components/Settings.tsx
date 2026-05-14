@@ -1,4 +1,4 @@
-import { Sun, Moon, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
