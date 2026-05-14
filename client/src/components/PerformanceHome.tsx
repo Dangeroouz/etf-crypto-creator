@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config";
 import {
   LineChart,
   Line,
@@ -18,71 +19,61 @@ interface PerformancePoint {
   [key: string]: number | string;
 }
 
-type Stat = { totalPerformance: number; bestDay: number; worstDay: number };
-type Stats = Record<string, Stat>;
-
-function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string; symbol2: string; days?: number }) {
+function PerformanceChartHome({
+  symbol1,
+  symbol2,
+  days = 90,
+}: {
+  symbol1: string;
+  symbol2: string;
+  days?: number;
+}) {
   const [data, setData] = useState<PerformancePoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
     setLoading(true);
 
     Promise.all([
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/${symbol1}?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/BTC?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/ETH?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/SOL?days=${days}`),
+      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/${symbol1}?days=${days}`),
+      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/BTC?days=${days}`),
+      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/ETH?days=${days}`),
+      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/SOL?days=${days}`),
     ])
       .then(([res1, btcData, ethData, solData]) => {
-        // Отримуємо першу ціну (базову)
         const basePrice1 = res1.data[0].close;
         const baseBTC = btcData.data[0].close;
         const baseETH = ethData.data[0].close;
         const baseSOL = solData.data[0].close;
 
-        // Обчислюємо перформанс (% від базової ціни)
-        const performanceData: PerformancePoint[] = res1.data.map((item, index) => {
-          const price1 = item.close;
-          const priceBTC = btcData.data[index]?.close || 0;
-          const priceETH = ethData.data[index]?.close || 0;
-          const priceSOL = solData.data[index]?.close || 0;
+        const performanceData: PerformancePoint[] = res1.data.map(
+          (item, index) => {
+            const price1 = item.close;
+            const priceBTC = btcData.data[index]?.close || 0;
+            const priceETH = ethData.data[index]?.close || 0;
+            const priceSOL = solData.data[index]?.close || 0;
 
-          const performance1 = ((price1 - basePrice1) / basePrice1) * 100;
-          const performanceMix =
-            (((priceBTC - baseBTC) / baseBTC) * 100 +
-              ((priceETH - baseETH) / baseETH) * 100 +
-              ((priceSOL - baseSOL) / baseSOL) * 100) / 3;
+            const performance1 = ((price1 - basePrice1) / basePrice1) * 100;
+            const performanceMix =
+              (((priceBTC - baseBTC) / baseBTC) * 100 +
+                ((priceETH - baseETH) / baseETH) * 100 +
+                ((priceSOL - baseSOL) / baseSOL) * 100) /
+              3;
 
-          return {
-            date: item.date,
-            [symbol1]: parseFloat(performance1.toFixed(2)),
-            MIX: parseFloat(performanceMix.toFixed(2)),
-            price1,
-            priceBTC,
-            priceETH,
-            priceSOL,
-          };
-        });
+            return {
+              date: item.date,
+              [symbol1]: parseFloat(performance1.toFixed(2)),
+              MIX: parseFloat(performanceMix.toFixed(2)),
+              price1,
+              priceBTC,
+              priceETH,
+              priceSOL,
+            };
+          },
+        );
 
         setData(performanceData);
-
-        // Обчислюємо статистику
-        const lastData = performanceData[performanceData.length - 1];
-        setStats({
-          [symbol1]: {
-            totalPerformance: Number(lastData[symbol1]),
-            bestDay: Math.max(...performanceData.map((d: PerformancePoint) => Number(d[symbol1]))),
-            worstDay: Math.min(...performanceData.map((d: PerformancePoint) => Number(d[symbol1]))),
-          },
-          ["MIX"]: {
-            totalPerformance: Number(lastData["MIX"]),
-            bestDay: Math.max(...performanceData.map((d: PerformancePoint) => Number(d["MIX"]))),
-            worstDay: Math.min(...performanceData.map((d: PerformancePoint) => Number(d["MIX"]))),
-          },
-        });
 
         setError(null);
       })
@@ -110,11 +101,8 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
       </div>
     );
 
-
   return (
     <div className="">
-      
-
       <ResponsiveContainer width="100%" height={450}>
         <LineChart
           data={data}
@@ -126,20 +114,24 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
             tick={{ fontSize: 12 }}
             interval={Math.floor(data.length / 10) || 0}
             tickFormatter={(value) => {
-    const date = new Date(value);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${day}/${month}`;
-  }}
+              const date = new Date(value);
+              const day = String(date.getDate()).padStart(2, "0");
+              const month = String(date.getMonth() + 1).padStart(2, "0");
+              return `${day}/${month}`;
+            }}
           />
           <YAxis
-            label={{ value: "% Performance", angle: -90, position: "insideLeft" }}
-            tickFormatter={(value, index) => (index === 0 ? '' : value)}
-            
+            label={{
+              value: "% Performance",
+              angle: -90,
+              position: "insideLeft",
+            }}
+            tickFormatter={(value, index) => (index === 0 ? "" : value)}
           />
           <Tooltip
             formatter={(value) => {
-              const v = typeof value === "number" ? value : Number(value as any);
+              const v =
+                typeof value === "number" ? value : Number(value as any);
               const color = v > 0 ? "#82ca9d" : v < 0 ? "#ff7c7c" : "#000";
               return (
                 <span style={{ color }}>
@@ -160,8 +152,7 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
             wrapperStyle={{ paddingTop: "20px" }}
             formatter={(value) => `${value} Performance`}
           />
-          
-          {/* Нульова лінія - базовий рівень (0%) */}
+
           <ReferenceLine
             y={0}
             stroke="#999"
@@ -169,7 +160,6 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
             label={{ value: "", position: "right", fill: "#999" }}
           />
 
-          {/* Лінія для першого активу */}
           <Line
             type="linear"
             dataKey={symbol1}
@@ -180,7 +170,6 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
             isAnimationActive={true}
           />
 
-          {/* Лінія для другого активу */}
           <Line
             type="linear"
             dataKey="MIX"
@@ -192,8 +181,6 @@ function PerformanceChartHome({ symbol1, symbol2, days = 90 }: { symbol1: string
           />
         </LineChart>
       </ResponsiveContainer>
-
-      
     </div>
   );
 }

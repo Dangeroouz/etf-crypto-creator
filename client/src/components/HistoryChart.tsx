@@ -21,17 +21,16 @@ function HistoryChart({ symbol, symbol2, days = 1095 }: { symbol: string; symbol
   const [data, setData] = useState<HistoryPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
 
   useEffect(() => {
     setLoading(true);
     
-    // Отримуємо дані для обох символів
-    Promise.all([
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/${symbol}?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/${symbol2}?days=${days}`)
+        Promise.all([
+          axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/${symbol}?days=${days}`),
+          axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/${symbol2}?days=${days}`)
     ])
       .then(([res1, res2]) => {
-        // Комбінуємо дані - кожний день має дані обох символів
         const combinedData: HistoryPoint[] = res1.data.map((item, index) => ({
           date: item.date,
           [`${symbol}_close`]: item.close,

@@ -17,10 +17,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
 await connectDB();
 
-// Middleware: Verify JWT token
 async function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -30,7 +28,6 @@ async function verifyToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    // Convert string userId to MongoDB ObjectId
     req.userId = new mongoose.Types.ObjectId(decoded.userId);
     req.email = decoded.email;
     next();
@@ -39,9 +36,7 @@ async function verifyToken(req, res, next) {
   }
 }
 
-// ====== AUTHENTICATION ENDPOINTS ======
 
-// Register endpoint
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -50,17 +45,14 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({ error: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcryptjs.hash(password, 10);
 
-    // Create new user
     const newUser = new User({
       email,
       password: hashedPassword,
@@ -68,7 +60,6 @@ app.post("/api/auth/register", async (req, res) => {
 
     const savedUser = await newUser.save();
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: savedUser._id, email: savedUser.email },
       JWT_SECRET,
@@ -86,7 +77,6 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
-// Login endpoint
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -95,21 +85,18 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Find user by email
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Compare passwords
     const isValidPassword = await bcryptjs.compare(password, user.password);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       JWT_SECRET,
@@ -127,7 +114,6 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// Verify token endpoint
 app.get("/api/auth/verify", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -142,9 +128,7 @@ app.get("/api/auth/verify", verifyToken, async (req, res) => {
   }
 });
 
-// ====== INDEX MANAGEMENT ENDPOINTS ======
 
-// Create new index
 app.post("/api/indices", verifyToken, async (req, res) => {
   try {
     const { name, selected, weights, initialInvestment } = req.body;
@@ -164,7 +148,6 @@ app.post("/api/indices", verifyToken, async (req, res) => {
     
     console.log("✅ Index created successfully:", savedIndex._id);
 
-    // Transform MongoDB _id to id for frontend
     const transformedIndex = {
       id: savedIndex._id.toString(),
       userId: savedIndex.userId.toString(),
@@ -186,14 +169,12 @@ app.post("/api/indices", verifyToken, async (req, res) => {
   }
 });
 
-// Get all user's indices
 app.get("/api/indices", verifyToken, async (req, res) => {
   try {
     console.log("🔍 Fetching indices for userId:", req.userId);
     
     const indices = await Index.find({ userId: req.userId });
     
-    // Transform MongoDB _id to id for frontend
     const transformedIndices = indices.map((index) => ({
       id: index._id.toString(),
       userId: index.userId.toString(),
@@ -213,7 +194,6 @@ app.get("/api/indices", verifyToken, async (req, res) => {
   }
 });
 
-// Get single index by ID
 app.get("/api/indices/:indexId", verifyToken, async (req, res) => {
   try {
     const { indexId } = req.params;
@@ -226,7 +206,6 @@ app.get("/api/indices/:indexId", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Index not found" });
     }
 
-    // Transform MongoDB _id to id for frontend
     const transformedIndex = {
       id: index._id.toString(),
       userId: index.userId.toString(),
@@ -245,7 +224,6 @@ app.get("/api/indices/:indexId", verifyToken, async (req, res) => {
   }
 });
 
-// Update index
 app.put("/api/indices/:indexId", verifyToken, async (req, res) => {
   try {
     const { indexId } = req.params;
@@ -266,7 +244,6 @@ app.put("/api/indices/:indexId", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Index not found" });
     }
 
-    // Transform MongoDB _id to id for frontend
     const transformedIndex = {
       id: index._id.toString(),
       userId: index.userId.toString(),
@@ -288,7 +265,6 @@ app.put("/api/indices/:indexId", verifyToken, async (req, res) => {
   }
 });
 
-// Delete index
 app.delete("/api/indices/:indexId", verifyToken, async (req, res) => {
   try {
     const { indexId } = req.params;
@@ -301,7 +277,6 @@ app.delete("/api/indices/:indexId", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Index not found" });
     }
 
-    // Transform MongoDB _id to id for frontend
     const transformedIndex = {
       id: index._id.toString(),
       userId: index.userId.toString(),
@@ -323,7 +298,6 @@ app.delete("/api/indices/:indexId", verifyToken, async (req, res) => {
   }
 });
 
-// Ендпоінт 1: Остання ціна BTC
 app.get("/api/price/:symbol", async (req, res) => {
   const { symbol } = req.params;
   
@@ -351,7 +325,6 @@ app.get("/api/price/:symbol", async (req, res) => {
   }
 });
 
-// Ендпоінт 2: 24-годинна статистика
 app.get("/api/stats/:symbol", async (req, res) => {
   const { symbol } = req.params;
   
@@ -383,7 +356,6 @@ app.get("/api/stats/:symbol", async (req, res) => {
   }
 });
 
-// Ендпоінт 2.5: Об'єднаний ендпоінт (ціна + 24h статистика)
 app.get("/api/crypto/:symbol", async (req, res) => {
   const { symbol } = req.params;
 
@@ -419,7 +391,6 @@ app.get("/api/crypto/:symbol", async (req, res) => {
   }
 });
 
-// Ендпоінт 3: Історичні дані
 app.get("/api/history/:symbol", async (req, res) => {
   const { symbol } = req.params;
   const { days } = req.query;
@@ -428,10 +399,8 @@ app.get("/api/history/:symbol", async (req, res) => {
     console.log(`Fetching real data for ${symbol} (${days || 1095} days)...`);
     
     const daysToShow = parseInt(days) || 1095;
-    // Binance API limit is 1000 candles per request
-    // We need to fetch multiple times to get older data
     const allKlines = [];
-    let endTime = undefined; // undefined means fetch the most recent data
+    let endTime = undefined; 
     const requestsNeeded = Math.ceil(daysToShow / 1000);
     
     console.log(`Need ${requestsNeeded} requests to fetch ${daysToShow} days of data`);
@@ -456,20 +425,16 @@ app.get("/api/history/:symbol", async (req, res) => {
         break;
       }
       
-      // Add to beginning (since we're fetching backwards)
       allKlines.unshift(...klines);
       
-      // Set endTime to the beginning of this batch for the next request
-      endTime = klines[0][0] - 1; // Subtract 1 to avoid overlap
+      endTime = klines[0][0] - 1; 
       
-      // If we got fewer than 1000, we've reached the beginning
       if (klines.length < 1000) {
         console.log(`Reached the beginning of data at ${new Date(klines[0][0]).toISOString()}`);
         break;
       }
     }
     
-    // Take the last daysToShow records
     const recentKlines = allKlines.slice(-daysToShow);
     
     const data = recentKlines.map(item => ({

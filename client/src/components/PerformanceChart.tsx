@@ -20,57 +20,54 @@ interface PerformancePoint {
   [key: string]: number | string;
 }
 
-type Stat = { totalPerformance: number; bestDay: number; worstDay: number };
-type Stats = Record<string, Stat>;
-
-function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; symbol2: string; days?: number }) {
+function PerformanceChart({
+  symbol1,
+  symbol2,
+  days = 90,
+}: {
+  symbol1: string;
+  symbol2: string;
+  days?: number;
+}) {
   const [data, setData] = useState<PerformancePoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [stats, setStats] = useState<Stats | null>(null);
-
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
   useEffect(() => {
     setLoading(true);
 
     Promise.all([
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/${symbol1}?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/${symbol2}?days=${days}`),
+      axios.get<ApiHistoryItem[]>(
+        `${API_URL}/api/history/${symbol1}?days=${days}`,
+      ),
+
+      axios.get<ApiHistoryItem[]>(
+        `${API_URL}/api/history/${symbol2}?days=${days}`,
+      ),
     ])
       .then(([res1, res2]) => {
         const basePrice1 = res1.data[0].close;
         const basePrice2 = res2.data[0].close;
 
-        const performanceData: PerformancePoint[] = res1.data.map((item, index) => {
-          const price1 = item.close;
-          const price2 = res2.data[index]?.close || 0;
+        const performanceData: PerformancePoint[] = res1.data.map(
+          (item, index) => {
+            const price1 = item.close;
+            const price2 = res2.data[index]?.close || 0;
 
-          const performance1 = ((price1 - basePrice1) / basePrice1) * 100;
-          const performance2 = ((price2 - basePrice2) / basePrice2) * 100;
+            const performance1 = ((price1 - basePrice1) / basePrice1) * 100;
+            const performance2 = ((price2 - basePrice2) / basePrice2) * 100;
 
-          return {
-            date: item.date,
-            [symbol1]: parseFloat(performance1.toFixed(2)),
-            [symbol2]: parseFloat(performance2.toFixed(2)),
-            price1,
-            price2,
-          };
-        });
+            return {
+              date: item.date,
+              [symbol1]: parseFloat(performance1.toFixed(2)),
+              [symbol2]: parseFloat(performance2.toFixed(2)),
+              price1,
+              price2,
+            };
+          },
+        );
 
         setData(performanceData);
-
-        const lastData = performanceData[performanceData.length - 1];
-        setStats({
-          [symbol1]: {
-            totalPerformance: Number(lastData[symbol1]),
-            bestDay: Math.max(...performanceData.map((d: PerformancePoint) => Number(d[symbol1]))),
-            worstDay: Math.min(...performanceData.map((d: PerformancePoint) => Number(d[symbol1]))),
-          },
-          [symbol2]: {
-            totalPerformance: Number(lastData[symbol2]),
-            bestDay: Math.max(...performanceData.map((d: PerformancePoint) => Number(d[symbol2]))),
-            worstDay: Math.min(...performanceData.map((d: PerformancePoint) => Number(d[symbol2]))),
-          },
-        });
 
         setError(null);
       })
@@ -98,14 +95,8 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
       </div>
     );
 
-  const formatPercentage = (value: number) => {
-    return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
-  };
-
   return (
     <div style={{ width: "100%", margin: "30px auto", padding: "20px" }}>
-      
-
       <ResponsiveContainer width="100%" height={450}>
         <LineChart
           data={data}
@@ -118,12 +109,17 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
             interval={Math.floor(data.length / 10) || 0}
           />
           <YAxis
-            label={{ value: "Performance (%)", angle: -90, position: "insideLeft" }}
-            
+            label={{
+              value: "Performance (%)",
+              angle: -90,
+              position: "insideLeft",
+            }}
+            tickFormatter={(value) => `${value}%`}
           />
           <Tooltip
             formatter={(value) => {
-              const v = typeof value === "number" ? value : Number(value as any);
+              const v =
+                typeof value === "number" ? value : Number(value as any);
               const color = v > 0 ? "#82ca9d" : v < 0 ? "#ff7c7c" : "#000";
               return (
                 <span style={{ color }}>
@@ -144,7 +140,7 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
             wrapperStyle={{ paddingTop: "20px" }}
             formatter={(value) => `${value} Performance`}
           />
-          
+
           <ReferenceLine
             y={0}
             stroke="#999"
@@ -173,8 +169,6 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
           />
         </LineChart>
       </ResponsiveContainer>
-
-      
     </div>
   );
 }

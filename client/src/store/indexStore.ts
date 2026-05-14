@@ -1,18 +1,9 @@
 import { create } from "zustand";
 import axios from "axios";
+import { API_URL } from "../config";
 
-const API_URL = "http://localhost:3333";
 
-interface BacktestResult {
-  totalReturn: number;
-  annualizedReturn: number;
-  sharpeRatio: number;
-  maxDrawdown: number;
-  winRate: number;
-  benchmarkReturn?: number;
-  outperformance?: number;
-  startDate?: string;
-}
+
 
 interface Index {
   id: string;

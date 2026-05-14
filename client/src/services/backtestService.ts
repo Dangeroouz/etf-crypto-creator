@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 
 interface DailyPrice {
   date: string;
@@ -43,17 +44,17 @@ export interface PortfolioPNL {
 }
 
 
-const API_BASE_URL = 'http://localhost:3333/api';
+
 
 export async function getHistoricalData(
   symbol: string,
   days: number = 365
 ): Promise<DailyPrice[]> {
   try {
-    console.log(`[API] Requesting history for ${symbol}`, { days, url: `${API_BASE_URL}/history/${symbol}?days=${days}` });
+    console.log(`[API] Requesting history for ${symbol}`, { days, url: `${API_URL}/api/history/${symbol}?days=${days}` });
     
     const response = await fetch(
-      `${API_BASE_URL}/history/${symbol}?days=${days}`
+      `${API_URL}/api/history/${symbol}?days=${days}`
     );
 
     if (!response.ok) {
@@ -465,7 +466,7 @@ export async function getPortfolioPNL(
     const historicalRequests = symbols.map(s => getHistoricalData(s, 1825));
     
     const liveRequests = symbols.map(s => 
-      fetch(`${API_BASE_URL}/price/${s}`)
+      fetch(`${API_URL}/price/${s}`)
         .then(r => r.ok ? r.json() : null)
         .catch(() => null)
     );
@@ -554,7 +555,7 @@ export async function getPortfolioPNL(
       // Get 24h change from Binance API
       let change24h = 0;
       try {
-        const statsResponse = await fetch(`${API_BASE_URL}/stats/${symbol}`);
+        const statsResponse = await fetch(`${API_URL}/api/stats/${symbol}`);
         if (statsResponse.ok) {
           const stats = await statsResponse.json();
           change24h = parseFloat(stats.priceChangePercent24h) || 0;

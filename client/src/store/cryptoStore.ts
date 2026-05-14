@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import { API_URL } from "../config";
 
 interface CryptoData {
   symbol: string;
@@ -107,7 +108,7 @@ export const useCryptoStore = create<CryptoStore>((set) => ({
   fetchCrypto: async () => {
   const responses = await Promise.all(
     allCrypto.map((crypto) =>
-      axios.get(`http://localhost:3333/api/crypto/${crypto.symbol}`)
+      axios.get(`${API_URL}/api/crypto/${crypto.symbol}`)
     )
   );
 
