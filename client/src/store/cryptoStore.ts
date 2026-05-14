@@ -13,17 +13,6 @@ interface CryptoStore {
   fetchCrypto: () => Promise<void>;
 }
 
-interface BacktestResult {
-  totalReturn: number;
-  annualizedReturn: number;
-  sharpeRatio: number;
-  maxDrawdown: number;
-  winRate: number;
-  benchmarkReturn?: number;
-  outperformance?: number;
-  startDate?: string;
-}
-
 interface CreatedIndex {
   id: string;
   name: string;
@@ -60,7 +49,7 @@ export const allCrypto = [
   { symbol: "LINK", name: "Chainlink" },
 ];
 
-export const useSelectedCryptos = create<SelectedCryptoStore>((set, get) => ({
+export const useSelectedCryptos = create<SelectedCryptoStore>((set) => ({
   selected: [],
   weights: [],
   total: 0,

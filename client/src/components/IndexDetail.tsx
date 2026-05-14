@@ -5,7 +5,7 @@ import useAuthStore from "../store/authStore";
 import { runBacktest, getPortfolioPNL } from "../services/backtestService";
 import type { PortfolioPNL } from "../services/backtestService";
 import { generateBacktestCSV, downloadCSV } from "../services/csvExportService";
-import { Trash2, Download, Save, Trash, FileText } from "lucide-react";
+import { Trash2, Save, Trash, FileText } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -221,21 +221,6 @@ export const IndexDetail = () => {
     localStorage.setItem(`backtests_${index.id}`, JSON.stringify(updated));
     if (selectedSavedBacktest?.id === id) {
       setSelectedSavedBacktest(null);
-    }
-  };
-
-  const downloadBacktestChart = () => {
-    if (!selectedSavedBacktest || !selectedSavedBacktest.result.portfolioDates)
-      return;
-
-    const canvas = document.getElementById(
-      "backtest-chart-to-export",
-    ) as HTMLCanvasElement;
-    if (canvas) {
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `backtest_${selectedSavedBacktest.name}_${Date.now()}.png`;
-      link.click();
     }
   };
 
