@@ -2,61 +2,36 @@ import express from "express";
 import cors from "cors";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { connectDB } from "./config/database.js";
+import User from "./models/User.js";
+import Index from "./models/Index.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 const app = express();
-const PORT = 3333;
+const PORT = process.env.PORT || 3333;
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
-
-const USERS_FILE = path.join(__dirname, "data", "users.json");
-const INDICES_FILE = path.join(__dirname, "data", "indices.json");
 
 app.use(cors());
 app.use(express.json());
 
-// Helpers for file operations
-async function readUsers() {
-  try {
-    const data = await fs.readFile(USERS_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-}
-
-async function writeUsers(users) {
-  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-async function readIndices() {
-  try {
-    const data = await fs.readFile(INDICES_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-}
-
-async function writeIndices(indices) {
-  await fs.writeFile(INDICES_FILE, JSON.stringify(indices, null, 2));
-}
+// Connect to MongoDB
+await connectDB();
 
 // Middleware: Verify JWT token
 async function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
-  
+
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
   }
-  
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.userId;
+    // Convert string userId to MongoDB ObjectId
+    req.userId = new mongoose.Types.ObjectId(decoded.userId);
     req.email = decoded.email;
     next();
   } catch (error) {
@@ -75,32 +50,35 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const users = await readUsers();
-    const existingUser = users.find(u => u.email === email);
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({ error: "User already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcryptjs.hash(password, 10);
-    const userId = Date.now().toString();
-    
-    const newUser = {
-      id: userId,
+
+    // Create new user
+    const newUser = new User({
       email,
       password: hashedPassword,
-      createdAt: new Date().toISOString()
-    };
+    });
 
-    users.push(newUser);
-    await writeUsers(users);
+    const savedUser = await newUser.save();
 
-    const token = jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: "7d" });
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: savedUser._id, email: savedUser.email },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user: { id: userId, email }
+      user: { id: savedUser._id, email: savedUser.email },
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -117,25 +95,31 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const users = await readUsers();
-    const user = users.find(u => u.email === email);
+    // Find user by email
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    // Compare passwords
     const isValidPassword = await bcryptjs.compare(password, user.password);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.json({
       message: "Login successful",
       token,
-      user: { id: user.id, email: user.email }
+      user: { id: user._id, email: user.email },
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -146,14 +130,13 @@ app.post("/api/auth/login", async (req, res) => {
 // Verify token endpoint
 app.get("/api/auth/verify", verifyToken, async (req, res) => {
   try {
-    const users = await readUsers();
-    const user = users.find(u => u.id === req.userId);
+    const user = await User.findById(req.userId);
 
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
 
-    res.json({ user: { id: user.id, email: user.email } });
+    res.json({ user: { id: user._id, email: user.email } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -165,24 +148,40 @@ app.get("/api/auth/verify", verifyToken, async (req, res) => {
 app.post("/api/indices", verifyToken, async (req, res) => {
   try {
     const { name, selected, weights, initialInvestment } = req.body;
+    
+    console.log("📝 Creating index for userId:", req.userId);
+    console.log("📝 Request body:", { name, selected, weights, initialInvestment });
 
-    const indices = await readIndices();
-    const newIndex = {
-      id: Date.now().toString(),
+    const newIndex = new Index({
       userId: req.userId,
       name,
       selected,
       weights,
       initialInvestment,
-      createdAt: new Date().toISOString()
+    });
+
+    const savedIndex = await newIndex.save();
+    
+    console.log("✅ Index created successfully:", savedIndex._id);
+
+    // Transform MongoDB _id to id for frontend
+    const transformedIndex = {
+      id: savedIndex._id.toString(),
+      userId: savedIndex.userId.toString(),
+      name: savedIndex.name,
+      selected: savedIndex.selected,
+      weights: savedIndex.weights,
+      initialInvestment: savedIndex.initialInvestment,
+      createdAt: savedIndex.createdAt,
+      updatedAt: savedIndex.updatedAt,
     };
 
-    indices.push(newIndex);
-    await writeIndices(indices);
-
-    res.status(201).json({ message: "Index created successfully", index: newIndex });
+    res.status(201).json({
+      message: "Index created successfully",
+      index: transformedIndex,
+    });
   } catch (error) {
-    console.error("Create index error:", error);
+    console.error("❌ Create index error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -190,11 +189,26 @@ app.post("/api/indices", verifyToken, async (req, res) => {
 // Get all user's indices
 app.get("/api/indices", verifyToken, async (req, res) => {
   try {
-    const indices = await readIndices();
-    const userIndices = indices.filter(idx => idx.userId === req.userId);
-    res.json(userIndices);
+    console.log("🔍 Fetching indices for userId:", req.userId);
+    
+    const indices = await Index.find({ userId: req.userId });
+    
+    // Transform MongoDB _id to id for frontend
+    const transformedIndices = indices.map((index) => ({
+      id: index._id.toString(),
+      userId: index.userId.toString(),
+      name: index.name,
+      selected: index.selected,
+      weights: index.weights,
+      initialInvestment: index.initialInvestment,
+      createdAt: index.createdAt,
+      updatedAt: index.updatedAt,
+    }));
+    
+    console.log(`📊 Found ${transformedIndices.length} indices for user`, req.userId);
+    res.json(transformedIndices);
   } catch (error) {
-    console.error("Get indices error:", error);
+    console.error("❌ Get indices error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -203,14 +217,28 @@ app.get("/api/indices", verifyToken, async (req, res) => {
 app.get("/api/indices/:indexId", verifyToken, async (req, res) => {
   try {
     const { indexId } = req.params;
-    const indices = await readIndices();
-    const index = indices.find(idx => idx.id === indexId && idx.userId === req.userId);
+    const index = await Index.findOne({
+      _id: indexId,
+      userId: req.userId,
+    });
 
     if (!index) {
       return res.status(404).json({ error: "Index not found" });
     }
 
-    res.json(index);
+    // Transform MongoDB _id to id for frontend
+    const transformedIndex = {
+      id: index._id.toString(),
+      userId: index.userId.toString(),
+      name: index.name,
+      selected: index.selected,
+      weights: index.weights,
+      initialInvestment: index.initialInvestment,
+      createdAt: index.createdAt,
+      updatedAt: index.updatedAt,
+    };
+
+    res.json(transformedIndex);
   } catch (error) {
     console.error("Get index error:", error);
     res.status(500).json({ error: error.message });
@@ -223,24 +251,37 @@ app.put("/api/indices/:indexId", verifyToken, async (req, res) => {
     const { indexId } = req.params;
     const { name, selected, weights, initialInvestment } = req.body;
 
-    const indices = await readIndices();
-    const indexIdx = indices.findIndex(idx => idx.id === indexId && idx.userId === req.userId);
+    const index = await Index.findOneAndUpdate(
+      { _id: indexId, userId: req.userId },
+      {
+        name: name ?? undefined,
+        selected: selected ?? undefined,
+        weights: weights ?? undefined,
+        initialInvestment: initialInvestment ?? undefined,
+      },
+      { new: true, runValidators: true }
+    );
 
-    if (indexIdx === -1) {
+    if (!index) {
       return res.status(404).json({ error: "Index not found" });
     }
 
-    indices[indexIdx] = {
-      ...indices[indexIdx],
-      name: name ?? indices[indexIdx].name,
-      selected: selected ?? indices[indexIdx].selected,
-      weights: weights ?? indices[indexIdx].weights,
-      initialInvestment: initialInvestment ?? indices[indexIdx].initialInvestment,
-      updatedAt: new Date().toISOString()
+    // Transform MongoDB _id to id for frontend
+    const transformedIndex = {
+      id: index._id.toString(),
+      userId: index.userId.toString(),
+      name: index.name,
+      selected: index.selected,
+      weights: index.weights,
+      initialInvestment: index.initialInvestment,
+      createdAt: index.createdAt,
+      updatedAt: index.updatedAt,
     };
 
-    await writeIndices(indices);
-    res.json({ message: "Index updated successfully", index: indices[indexIdx] });
+    res.json({
+      message: "Index updated successfully",
+      index: transformedIndex,
+    });
   } catch (error) {
     console.error("Update index error:", error);
     res.status(500).json({ error: error.message });
@@ -251,17 +292,31 @@ app.put("/api/indices/:indexId", verifyToken, async (req, res) => {
 app.delete("/api/indices/:indexId", verifyToken, async (req, res) => {
   try {
     const { indexId } = req.params;
-    const indices = await readIndices();
-    const indexIdx = indices.findIndex(idx => idx.id === indexId && idx.userId === req.userId);
+    const index = await Index.findOneAndDelete({
+      _id: indexId,
+      userId: req.userId,
+    });
 
-    if (indexIdx === -1) {
+    if (!index) {
       return res.status(404).json({ error: "Index not found" });
     }
 
-    const deletedIndex = indices.splice(indexIdx, 1);
-    await writeIndices(indices);
+    // Transform MongoDB _id to id for frontend
+    const transformedIndex = {
+      id: index._id.toString(),
+      userId: index.userId.toString(),
+      name: index.name,
+      selected: index.selected,
+      weights: index.weights,
+      initialInvestment: index.initialInvestment,
+      createdAt: index.createdAt,
+      updatedAt: index.updatedAt,
+    };
 
-    res.json({ message: "Index deleted successfully", index: deletedIndex[0] });
+    res.json({
+      message: "Index deleted successfully",
+      index: transformedIndex,
+    });
   } catch (error) {
     console.error("Delete index error:", error);
     res.status(500).json({ error: error.message });
@@ -434,4 +489,6 @@ app.get("/api/history/:symbol", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);

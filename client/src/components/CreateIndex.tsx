@@ -31,7 +31,6 @@ export const CreateIndex = () => {
     if (stage < 3) {
       setStage(stage + 1);
     } else if (stage === 3) {
-      // Зберігаємо індекс на бекенді
       try {
         setCreateError(null);
         if (!token) {
@@ -39,18 +38,16 @@ export const CreateIndex = () => {
           return;
         }
 
-        await createIndex(token, {
+        const newIndex = await createIndex(token, {
           name,
           selected: selectedCryptos,
           weights,
           initialInvestment,
         });
 
-        // Скидаємо форму
         resetForm();
         
-        // Перенаправляємо на My Indices
-        navigate("/my-indices");
+        navigate(`/my-indices/${encodeURIComponent(newIndex.id)}`);
       } catch (error: any) {
         setCreateError(error.response?.data?.error || "Failed to create index");
       }

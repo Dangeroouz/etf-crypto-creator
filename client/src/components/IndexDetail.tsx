@@ -416,8 +416,8 @@ export const IndexDetail = () => {
                 {/* Index Info */}
 
                 {/* PNL Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                  <div className=" p-6 rounded-lg border border-black/10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="p-6 rounded-lg border border-black/10">
                     <p className="text-gray-600 text-sm mb-2 font-semibold">
                       CURRENT VALUE
                     </p>
@@ -799,7 +799,7 @@ export const IndexDetail = () => {
                       <option value="AVAX">Avalanche (AVAX)</option>
                     </optgroup>
                     <optgroup label="Layer 2 & Scaling">
-                      <option value="MATIC">Polygon (MATIC)</option>
+                      <option value="LTC">Litecoin (LTC)</option>
                       <option value="ARB">Arbitrum (ARB)</option>
                       <option value="OP">Optimism (OP)</option>
                     </optgroup>
@@ -811,7 +811,6 @@ export const IndexDetail = () => {
                     <optgroup label="Other">
                       <option value="XRP">XRP (XRP)</option>
                       <option value="DOGE">Dogecoin (DOGE)</option>
-                      <option value="LTC">Litecoin (LTC)</option>
                       <option value="BCH">Bitcoin Cash (BCH)</option>
                     </optgroup>
                     <optgroup label="None">

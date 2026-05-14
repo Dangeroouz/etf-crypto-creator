@@ -5,7 +5,7 @@ import {
   TokenADA,
   TokenAVAX,
   TokenDOT,
-  TokenMATIC,
+  TokenLTC,
   TokenLINK,
 } from "@web3icons/react";
 
@@ -16,6 +16,6 @@ export const tokenIcons: Record<string, any> = {
   ADA: TokenADA,
   AVAX: TokenAVAX,
   DOT: TokenDOT,
-  MATIC: TokenMATIC,
+  LTC: TokenLTC,
   LINK: TokenLINK,
 };

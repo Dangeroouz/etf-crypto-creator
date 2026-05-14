@@ -49,7 +49,7 @@ export const MyIndices = () => {
           {indices.map((index) => (
             <div
               key={index.id}
-              className="bg-white p-6 rounded-xl border border-black/10 hover:shadow-lg transition cursor-pointer"
+              className="bg-white p-6 rounded-xl border border-black/10 hover:shadow-lg transition"
               onClick={() => navigate(`/my-indices/${encodeURIComponent(index.id)}`)}
             >
               <div className="mb-4">
@@ -70,7 +70,7 @@ export const MyIndices = () => {
                 </div>
               </div>
 
-              <button className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold transition">
+              <button className="cursor-pointer w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold transition">
                 View Details
               </button>
             </div>

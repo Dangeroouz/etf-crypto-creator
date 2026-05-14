@@ -1,5 +1,6 @@
 import { Menu, X, LogOut} from "lucide-react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
 
@@ -91,12 +92,12 @@ export default function Navbar() {
       </div>
 
       {mobileMenuIsOpen && (
-        <div className="fixed md:hidden w-screen bg-white backdrop-blur-lg border-t border-slate-500 animate-in slide-in-from-top duration-300 ease-out">
+        <div className="fixed md:hidden w-screen bg-white backdrop-blur-lg border border-slate-300 animate-in slide-in-from-top duration-300 ease-out z-40">
           <div className="flex flex-col items-center space-y-3 py-4 px-4 sm:py-6 sm:space-y-4">
             {isAuthenticated ? (
               <>
                 {navItems.map((item) => (
-                  <Link key={item.path} to={item.path}>
+                  <Link key={item.path} to={item.path} onClick={() => setMobileMenuIsOpen(false)}>
                     <button
                       className={`text-gray-500 px-4 py-2 text-md hover:bg-gray-100 rounded-md`}
                     >
@@ -109,7 +110,10 @@ export default function Navbar() {
                     <div className="border-t border-gray-200 w-full my-2"></div>
                     <span className="text-gray-600 text-sm">{user.email}</span>
                     <button
-                      onClick={() => setShowLogoutModal(true)}
+                      onClick={() => {
+                        setShowLogoutModal(true);
+                        setMobileMenuIsOpen(false);
+                      }}
                       className="text-gray-500 hover:text-red-500 px-4 py-2 rounded-md hover:bg-gray-100 transition flex items-center space-x-2"
                     >
                       <LogOut className="w-5 h-5" />
@@ -120,12 +124,12 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/login" className="w-full">
+                <Link to="/login" className="w-full" onClick={() => setMobileMenuIsOpen(false)}>
                   <button className="w-full px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition">
                     Login
                   </button>
                 </Link>
-                <Link to="/register" className="w-full">
+                <Link to="/register" className="w-full" onClick={() => setMobileMenuIsOpen(false)}>
                   <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
                     Register
                   </button>
@@ -137,8 +141,8 @@ export default function Navbar() {
       )}
 
       {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      {showLogoutModal && createPortal(
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-xl p-8 max-w-md mx-4 shadow-2xl">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Logout?</h2>
             <p className="text-gray-600 mb-6 text-base">
@@ -161,7 +165,8 @@ export default function Navbar() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </nav>
   );

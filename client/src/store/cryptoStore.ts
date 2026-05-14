@@ -57,7 +57,7 @@ export const allCrypto = [
   { symbol: "ADA", name: "Cardano" },
   { symbol: "AVAX", name: "Avalanche" },
   { symbol: "DOT", name: "Polkadot" },
-  { symbol: "MATIC", name: "Polygon" },
+  { symbol: "LTC", name: "Litecoin" },
   { symbol: "LINK", name: "Chainlink" },
 ];
 

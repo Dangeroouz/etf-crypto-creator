@@ -37,11 +37,9 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
       axios.get<ApiHistoryItem[]>(`http://localhost:3333/api/history/${symbol2}?days=${days}`),
     ])
       .then(([res1, res2]) => {
-        // Отримуємо першу ціну (базову)
         const basePrice1 = res1.data[0].close;
         const basePrice2 = res2.data[0].close;
 
-        // Обчислюємо перформанс (% від базової ціни)
         const performanceData: PerformancePoint[] = res1.data.map((item, index) => {
           const price1 = item.close;
           const price2 = res2.data[index]?.close || 0;
@@ -60,7 +58,6 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
 
         setData(performanceData);
 
-        // Обчислюємо статистику
         const lastData = performanceData[performanceData.length - 1];
         setStats({
           [symbol1]: {
@@ -148,7 +145,6 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
             formatter={(value) => `${value} Performance`}
           />
           
-          {/* Нульова лінія - базовий рівень (0%) */}
           <ReferenceLine
             y={0}
             stroke="#999"
@@ -156,7 +152,6 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
             label={{ value: "Baseline (0%)", position: "right", fill: "#999" }}
           />
 
-          {/* Лінія для першого активу */}
           <Line
             type="monotone"
             dataKey={symbol1}
@@ -167,7 +162,6 @@ function PerformanceChart({ symbol1, symbol2, days = 90 }: { symbol1: string; sy
             isAnimationActive={true}
           />
 
-          {/* Лінія для другого активу */}
           <Line
             type="monotone"
             dataKey={symbol2}

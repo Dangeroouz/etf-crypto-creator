@@ -37,7 +37,7 @@ const StepOne = () => {
                   const Icon = tokenIcons[allCrypto[index].symbol];
                   return Icon ? (
                     <Icon
-                      className="bg-linear-to-br from-indigo-100 to-indigo-50 rounded-full row-span-2"
+                      className="p-1 bg-linear-to-br from-indigo-100 to-indigo-50 rounded-full row-span-2"
                       variant="mono"
                       size={48}
                       color="#151515ff"

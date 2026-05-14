@@ -52,8 +52,8 @@ export const Home = () => {
             View My Indices
           </button>
         </div>
-        <section className="bg-white p-4 rounded-xl border border-black/10 mt-16" style={{ padding: "20px", backgroundColor: "#fafafa" }}>
-          <PerformanceChartHome symbol1="BTC" symbol2="ETH" days={10} />
+        <section className="hidden sm:block bg-white p-4 rounded-xl border border-black/10 mt-16" style={{ padding: "20px", backgroundColor: "#fafafa" }}>
+          <PerformanceChartHome symbol1="BTC" symbol2="ETH" days={10}/>
         </section>
         <div className="flex justify-center mt-12 gap-6 md:flex-nowrap flex-wrap">
           <div className="bg-white p-4 rounded-xl border border-black/10">
@@ -115,7 +115,7 @@ export const Home = () => {
                     <p className="text-sm text-gray-600">{crypto.symbol}</p>
                   </div>
                 </div>
-                <p className="text-black-600 text-bold text-xl mt-2">
+                <p className="text-black-600 text-bold text-xl mt-2 pl-2">
                   ${crypto.price.toFixed(2)}
                 </p>
                 <p className="text-sm text-gray-600 flex align-center" style={{
