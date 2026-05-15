@@ -12,9 +12,29 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3333;
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
+const JWT_SECRET = process.env.JWT_SECRET;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-app.use(cors());
+// Validate required environment variables
+if (!JWT_SECRET && NODE_ENV === 'production') {
+  console.error('❌ JWT_SECRET is required in production');
+  process.exit(1);
+}
+
+if (!process.env.MONGODB_URI && NODE_ENV === 'production') {
+  console.error('❌ MONGODB_URI is required in production');
+  process.exit(1);
+}
+
+// CORS Configuration for production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 await connectDB();
@@ -455,5 +475,5 @@ app.get("/api/history/:symbol", async (req, res) => {
 });
 
 app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
+  console.log(`🚀 Server running on port ${PORT} (${NODE_ENV})`)
 );
