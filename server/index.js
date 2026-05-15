@@ -325,7 +325,7 @@ app.get("/api/price/:symbol", async (req, res) => {
     console.log(`Fetching current price for ${symbol}...`);
     
     const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/price?symbol=${symbol}USDT`
+      `https://data-api.binance.vision/api/v3/ticker/price?symbol=${symbol}USDT`
     );
     
     if (!response.ok) {
@@ -352,7 +352,7 @@ app.get("/api/stats/:symbol", async (req, res) => {
     console.log(`Fetching 24h stats for ${symbol}...`);
     
     const response = await fetch(
-      `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`
+      `https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${symbol}USDT`
     );
     
     if (!response.ok) {
@@ -383,8 +383,8 @@ app.get("/api/crypto/:symbol", async (req, res) => {
     console.log(`Fetching combined data for ${symbol}...`);
 
     const [priceRes, statsRes] = await Promise.all([
-      fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}USDT`),
-      fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`)
+      fetch(`https://data-api.binance.vision/api/v3/ticker/price?symbol=${symbol}USDT`),
+      fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${symbol}USDT`)
     ]);
 
     if (!priceRes.ok || !statsRes.ok) {
@@ -426,7 +426,7 @@ app.get("/api/history/:symbol", async (req, res) => {
     console.log(`Need ${requestsNeeded} requests to fetch ${daysToShow} days of data`);
     
     for (let i = 0; i < requestsNeeded; i++) {
-      let url = `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=1d&limit=1000`;
+      let url = `https://data-api.binance.vision/api/v3/klines?symbol=${symbol}USDT&interval=1d&limit=1000`;
       if (endTime) {
         url += `&endTime=${endTime}`;
       }
