@@ -16,7 +16,7 @@ export const CreateIndex = () => {
   const [createError, setCreateError] = useState<string | null>(null);
 
   const stagesNames = [
-    "Choose Cryptocurrencies",
+    "Choose Currencies",
     "Configure Index",
     "Review & Create",
   ];
@@ -76,7 +76,7 @@ export const CreateIndex = () => {
   return (
     <div className="container max-w-6xl mx-auto">
       <div className=" bg-white p-4 rounded-xl border border-black/10 mb-4">
-        <div className="grid grid-cols-3 grid-rows-1">
+        <div className="sm:grid hidden grid-cols-3 grid-rows-1">
           {stagesNames.map((name, index) => (
             <div
               key={index}
@@ -104,7 +104,28 @@ export const CreateIndex = () => {
             </div>
           ))}
         </div>
-      </div>
+        <div className="sm:hidden flex justify-center items-center gap-4">
+          {stagesNames[stage - 1] && (
+            <div className="text-center pb-4">
+              <div
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-2 transition bg-indigo-600 text-white"
+              >
+                {stage}
+              </div>
+              <h2>{stagesNames[stage - 1]}</h2>
+            </div>
+          )}
+        </div>
+        <div className="sm:hidden text-center flex justify-between mt-2">
+          {stagesSubNames[stage - 1] && (
+            <p className="text-sm  px-1 text-gray-600">{stagesSubNames[stage - 1]}</p>
+          )}
+        </div>
+        <div className="sm:hidden flex justify-between mt-2">
+          
+        </div>
+      </div>  
+            
 
       <div className="bg-white p-4 rounded-xl border border-black/10">
         <div className="mb-4">
@@ -120,14 +141,14 @@ export const CreateIndex = () => {
           </div>
         )}
 
-        <div className="p-2">
+        <div className="sm:p-2 p-0">
             {stage === 1 ? <StepOne /> : null}
             {stage === 2 ? <StepTwo /> : null}
             {stage === 3 ? <ReviewStep selectedCryptos={selectedCryptos} weights={weights} name={name} initialInvestment={initialInvestment} /> : null}
         </div>
         
         <div className="">
-          <div className="flex justify-between">
+          <div className="flex py-2 justify-between">
             <button
               onClick={prevStage}
               disabled={stage === 1 || isCreatingIndex}
@@ -154,27 +175,27 @@ export const CreateIndex = () => {
 const ReviewStep = ({ selectedCryptos, weights, name, initialInvestment }: any) => {
   return (
     <div>
-      <div className="w-full mb-6">
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="w-full sm:mb-6 mb-4">
+        <div className="p-4 rounded-lg border border-gray-200">
           <p className="text-sm text-gray-600 mb-2">Index Name</p>
           <p className="text-lg font-semibold">{name}</p>
         </div>
       </div>
 
       <div className="w-full mb-6">
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="p-4 rounded-lg border border-gray-200">
           <p className="text-sm text-gray-600 mb-2">Initial Investment</p>
           <p className="text-lg font-semibold">${initialInvestment.toFixed(2)}</p>
         </div>
       </div>
 
-      <div className="w-full border border-gray-100 rounded-lg p-4">
+      <div className="w-full border border-gray-100 rounded-lg sm:p-4 p-2">
         <div className="flex items-center justify-between mb-4 border-b border-gray-200 pb-2">
-          <h2 className="font-semibold">Selected Cryptocurrencies</h2>
+          <h2 className="font-semibold">Selected Currencies</h2>
           <p className="bg-gray-200 p-2 py-1 text-sm rounded-lg">{selectedCryptos.length} assets</p>
         </div>
         {selectedCryptos.map((symbol: string, index: number) => (
-          <div key={symbol} className="flex items-center justify-between h-full w-full gap-2 bg-white px-4 py-2 mb-2 rounded-lg border border-gray-200">
+          <div key={symbol} className="flex items-center justify-between h-full w-full gap-2 bg-white sm:px-4 px-2 py-2 mb-2 rounded-lg border border-gray-200">
             <div className="flex items-center gap-4">
               {(() => {
                 const Icon = tokenIcons[symbol];
@@ -188,7 +209,7 @@ const ReviewStep = ({ selectedCryptos, weights, name, initialInvestment }: any) 
               })()}
               <h2 className="text-lg flex items-center gap-2">
                 <p>{allCrypto.find((c) => c.symbol === symbol)?.name}</p>
-                <h2 className="text-gray-500">({symbol})</h2>
+                <h2 className="text-gray-500 hidden sm:block">({symbol})</h2>
               </h2>
             </div>
             <h3 className="text-md text-gray-500">

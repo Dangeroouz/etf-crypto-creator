@@ -109,19 +109,28 @@ export const IndexDetail = () => {
   // Load saved backtests from localStorage
   useEffect(() => {
     if (index) {
-      const saved = localStorage.getItem(`backtests_${index.id}`);
-      if (saved) {
-        setSavedBacktests(JSON.parse(saved));
+      try {
+        const saved = localStorage.getItem(`backtests_${index.id}`);
+        if (saved) {
+          setSavedBacktests(JSON.parse(saved));
+        } else {
+          setSavedBacktests([]);
+        }
+      } catch (err) {
+        console.error('[IndexDetail] Error loading saved backtests:', err);
+        setSavedBacktests([]);
       }
     }
   }, [index?.id]);
 
   // Load Overview data from creation date to today
   useEffect(() => {
-    if (index && !overviewData && !overviewLoading) {
+    if (index) {
+      setOverviewData(null); // Clear old data when index changes
+      setOverviewError(null);
       loadOverviewData();
     }
-  }, [index?.id]);
+  }, [index?.id, index?.selected, index?.weights, index?.initialInvestment]);
 
   const loadOverviewData = async () => {
     if (!index) return;
@@ -129,6 +138,7 @@ export const IndexDetail = () => {
     try {
       setOverviewLoading(true);
       setOverviewError(null);
+      console.log('[IndexDetail] Loading overview data for index:', index.name, { selected: index.selected, weights: index.weights });
 
       // Get simple PNL data from creation date to today
       const result = await getPortfolioPNL(
@@ -138,12 +148,13 @@ export const IndexDetail = () => {
         index.createdAt,
       );
 
+      console.log('[IndexDetail] Overview data loaded successfully:', { currentValue: result.currentValue, pnlPercent: result.pnlPercent });
       setOverviewData(result);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load portfolio data";
       setOverviewError(errorMessage);
-      console.error("Overview data error:", err);
+      console.error("[IndexDetail] Overview data error:", err);
     } finally {
       setOverviewLoading(false);
     }
@@ -348,7 +359,7 @@ export const IndexDetail = () => {
 
       {/* Tabs Navigation */}
       <div className="bg-white border-b  border border-black/10 rounded-t-xl mb-0">
-        <div className="flex gap-8 px-6">
+        <div className="flex gap-8 px-6 overflow-x-scroll">
           <button
             onClick={() => setActiveTab("overview")}
             className={`py-4 px-2 font-semibold border-b-2 transition ${
@@ -383,7 +394,7 @@ export const IndexDetail = () => {
       </div>
 
       {/* Tabs Content */}
-      <div className="bg-white rounded-b-xl border border-t-0 border-gray-200 p-6">
+      <div className="bg-white rounded-b-xl border border-t-0 border-gray-200 sm:p-6 p-4">
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div>
@@ -402,9 +413,9 @@ export const IndexDetail = () => {
 
                 {/* PNL Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="p-6 rounded-lg border border-black/10">
+                  <div className="p-6 flex flex-col rounded-lg border border-black/10">
                     <p className="text-gray-600 text-sm mb-2 font-semibold">
-                      CURRENT VALUE
+                      Current Value
                     </p>
                     <p className={`text-3xl font-bold `}>
                       ${overviewData.currentValue.toFixed(2)}
@@ -437,7 +448,7 @@ export const IndexDetail = () => {
 
                   <div className=" p-6 rounded-lg border border-black/10">
                     <p className="text-gray-600 text-sm mb-2 font-semibold">
-                      SHARPE RATIO
+                      Sharpe Ratio
                     </p>
                     {!Number.isNaN(overviewData.sharpeRatio) ? (
                       <p className="text-3xl font-bold ">
@@ -450,7 +461,7 @@ export const IndexDetail = () => {
                 </div>
 
                 {/* Assets Breakdown */}
-                <div className="bg-gray-100/20 border border-gray-200 rounded-lg p-6 mb-6">
+                <div className="bg-gray-100/20 rounded-lg sm:p-6 mb-6">
                   <h3 className="text-xl font-semibold mb-4">
                     Portfolio Composition
                   </h3>
@@ -467,8 +478,8 @@ export const IndexDetail = () => {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={({ name, value }) => `${name}: ${value}%`}
-                            outerRadius={80}
+                            label={({ name, value }) => `${name}: ${(value as number).toFixed(0)}%`}
+                            outerRadius={window.innerWidth < 768 ? 50 : 80}
                             fill="#8884d8"
                             dataKey="value"
                           >
@@ -485,7 +496,7 @@ export const IndexDetail = () => {
                     </div>
 
                     {/* Assets List */}
-                    <div className="lg:col-span-2 space-y-3 overflow-y-scroll max-h-96 pr-4">
+                    <div className="lg:col-span-2 space-y-3 overflow-y-scroll max-h-80 sm:max-h-96">
                       {index.selected.map((symbol, idx) => {
                         const assetData = overviewData.assetPrices[idx];
                         const assetValueCreation =
@@ -503,11 +514,11 @@ export const IndexDetail = () => {
                             className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200  transition "
                           >
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
                                 <span className="font-semibold text-lg text-gray-900">
                                   {symbol}
                                 </span>
-                                <span className="text-sm bg-gray-50 border border-black/10 text-gray-700 px-2 py-1 rounded">
+                                <span className="text-sm w-fit bg-gray-50 border border-black/10 text-gray-700 px-2 py-1 rounded">
                                   {index.weights[idx]}%
                                 </span>
                               </div>
@@ -636,11 +647,11 @@ export const IndexDetail = () => {
                 {/* Performance Chart from Creation to Today */}
                 {overviewData.portfolioPrices &&
                   overviewData.portfolioDates && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 mt-4">
-                      <h3 className="text-xl font-semibold mb-4">
+                    <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-6 mb-6 mt-4">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-4">
                         Performance from Creation to Today
                       </h3>
-                      <ResponsiveContainer width="100%" height={400}>
+                      <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 250 : 400}>
                         <LineChart
                           data={overviewData.portfolioDates.map(
                             (date, idx) => ({
@@ -649,6 +660,7 @@ export const IndexDetail = () => {
                               initialBalance: index.initialInvestment,
                             }),
                           )}
+                          margin={{ top: 5, right: 10, left: window.innerWidth < 640 ? -20 : 0, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis
@@ -664,12 +676,12 @@ export const IndexDetail = () => {
                               ).padStart(2, "0");
                               return `${day}/${month}`;
                             }}
-                            tick={{ fontSize: 10 }}
-                            minTickGap={40}
+                            tick={{ fontSize: window.innerWidth < 640 ? 8 : 10 }}
+                            minTickGap={window.innerWidth < 640 ? 30 : 40}
                           />
                           <YAxis
                             domain={["auto", "auto"]}
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }}
                             tickFormatter={(value, index) =>
                               index === 0 ? "" : value
                             }
@@ -880,7 +892,7 @@ export const IndexDetail = () => {
             {backtestResult && !backtestLoading && (
               <div>
                 {/* Results Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="bg-white p-6 rounded-lg border border-gray-200">
                     <p className="text-sm text-gray-600 mb-2">Total Return</p>
                     <p
@@ -904,7 +916,7 @@ export const IndexDetail = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="flex flex-col grid-cols-1 md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                   <div className="bg-white p-6 rounded-lg border border-gray-200">
                     <p className="text-sm text-gray-600 mb-2">Win Rate</p>
                     <p className="text-3xl font-bold">
@@ -935,7 +947,7 @@ export const IndexDetail = () => {
                     </p>
                   </div>
                     <div className="col-span-4 w-100%">
-                    <div className="bg-white gap-4 rounded-lg flex justify-around">
+                    <div className="bg-white sm:flex-row flex-col gap-4 rounded-lg flex justify-around">
                       
                           <div className="w-full p-6 rounded-lg border border-black/10">
                             <h3 className="text-lg font-semibold  mb-3">
@@ -982,11 +994,11 @@ export const IndexDetail = () => {
                 {/* Chart */}
                 {backtestResult.portfolioPrices &&
                   backtestResult.portfolioDates && (
-                    <div className="bg-white p-6 rounded-lg border border-gray-200">
-                      <h3 className="text-lg font-semibold mb-4">
+                    <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                      <h3 className="text-lg sm:text-lg font-semibold mb-4">
                         Portfolio Value Over Time
                       </h3>
-                      <ResponsiveContainer width="100%" height={400}>
+                      <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 250 : 400}>
                         <LineChart
                           data={backtestResult.portfolioDates.map(
                             (date, idx) => {
@@ -1004,6 +1016,7 @@ export const IndexDetail = () => {
                               return dataPoint;
                             },
                           )}
+                          margin={{ top: 5, right: 10, left: window.innerWidth < 640 ? -20 : 0, bottom: 5 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis
@@ -1016,16 +1029,21 @@ export const IndexDetail = () => {
                                 "0",
                               );
                               const yy = String(d.getFullYear()).slice(-2);
-                              return `${dd}/${mm}/${yy}`;
+                              return window.innerWidth < 640 ? `${dd}/${mm}` : `${dd}/${mm}/${yy}`;
                             }}
-                            tick={{ fontSize: 10 }}
+                            tick={{ fontSize: window.innerWidth < 640 ? 8 : 10 }}
                             interval="preserveStartEnd"
-                            minTickGap={40}
+                            minTickGap={window.innerWidth < 640 ? 30 : 40}
                           />
                           <YAxis
                             domain={["auto", "auto"]}
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }}
                             tickFormatter={(value) => {
+                              if (window.innerWidth < 640) {
+                                if (value >= 1000)
+                                  return `$${(value / 1000).toFixed(0)}k`;
+                                return `$${value.toFixed(0)}`;
+                              }
                               if (value >= 1000)
                                 return `$${value.toLocaleString()}`;
                               return `$${value.toFixed(2)}`;
@@ -1170,8 +1188,8 @@ export const IndexDetail = () => {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Saved Backtests List */}
-                <div className="lg:col-span-1">
-                  <h3 className="text-xl font-semibold mb-4">
+                <div className="lg:col-span-1 max-w-xs lg:max-w-none mx-auto">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-4">
                     Saved Backtests
                   </h3>
                   <div className="space-y-3">
@@ -1351,11 +1369,11 @@ export const IndexDetail = () => {
                     {/* Chart */}
                     {selectedSavedBacktest.result.portfolioPrices &&
                       selectedSavedBacktest.result.portfolioDates && (
-                        <div className="bg-white p-6 rounded-lg">
+                        <div className="bg-white p-3 sm:p-6 rounded-lg">
                           <h3 className="text-lg font-semibold mb-4">
                             Performance Chart
                           </h3>
-                          <ResponsiveContainer width="100%" height={400}>
+                          <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 250 : 400}>
                             <LineChart
                               data={selectedSavedBacktest.result.portfolioDates.map(
                                 (date, idx) => {
@@ -1379,6 +1397,7 @@ export const IndexDetail = () => {
                                   return dataPoint;
                                 },
                               )}
+                              margin={{ top: 5, right: 10, left: window.innerWidth < 640 ? -20 : 0, bottom: 5 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis
@@ -1394,9 +1413,9 @@ export const IndexDetail = () => {
                                     "0",
                                   );
                                   const yy = String(d.getFullYear()).slice(-2);
-                                  return `${dd}/${mm}/${yy}`;
+                                  return window.innerWidth < 640 ? `${dd}/${mm}` : `${dd}/${mm}/${yy}`;
                                 }}
-                                tick={{ fontSize: 10 }}
+                                tick={{ fontSize: window.innerWidth < 640 ? 8 : 10 }}
                                 interval="preserveStartEnd"
                                 minTickGap={40}
                               />
@@ -1457,7 +1476,7 @@ export const IndexDetail = () => {
       <div className="flex gap-4 mt-6 mb-6">
         <button
           onClick={() => navigate("/my-indices")}
-          className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold transition"
+          className="w-full sm:w-auto px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold transition"
         >
           Back to My Indices
         </button>

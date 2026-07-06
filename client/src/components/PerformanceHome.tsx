@@ -31,12 +31,21 @@ function PerformanceChartHome({
   const [data, setData] = useState<PerformancePoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
 
     Promise.all([
-      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/${symbol1}?days=${days}`),
+      axios.get<ApiHistoryItem[]>(
+        `${API_URL}/api/history/${symbol1}?days=${days}`
+      ),
       axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/BTC?days=${days}`),
       axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/ETH?days=${days}`),
       axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/SOL?days=${days}`),
@@ -70,7 +79,7 @@ function PerformanceChartHome({
               priceETH,
               priceSOL,
             };
-          },
+          }
         );
 
         setData(performanceData);
@@ -101,18 +110,26 @@ function PerformanceChartHome({
       </div>
     );
 
+  const isMobile = windowWidth < 640;
+  const chartHeight = isMobile ? 250 : 450;
+  const leftMargin = isMobile ? -20 : 0;
+  const tickFontSize = isMobile ? 8 : 12;
+  const minTickGap = isMobile ? 30 : 0;
+  const strokeWidth = isMobile ? 1.5 : 2.5;
+
   return (
-    <div className="">
-      <ResponsiveContainer width="100%" height={450}>
+    <div className="" style={{ padding: isMobile ? "10px" : "0" }}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <LineChart
           data={data}
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+          margin={{ top: 5, right: 10, left: leftMargin, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 12 }}
-            interval={Math.floor(data.length / 10) || 0}
+            tick={{ fontSize: tickFontSize }}
+            interval={Math.floor(data.length / (isMobile ? 5 : 10)) || 0}
+            minTickGap={minTickGap}
             tickFormatter={(value) => {
               const date = new Date(value);
               const day = String(date.getDate()).padStart(2, "0");
@@ -121,11 +138,16 @@ function PerformanceChartHome({
             }}
           />
           <YAxis
-            label={{
-              value: "% Performance",
-              angle: -90,
-              position: "insideLeft",
-            }}
+            label={
+              !isMobile
+                ? {
+                    value: "% Performance",
+                    angle: -90,
+                    position: "insideLeft",
+                  }
+                : undefined
+            }
+            tick={{ fontSize: tickFontSize }}
             tickFormatter={(value, index) => (index === 0 ? "" : value)}
           />
           <Tooltip
@@ -145,19 +167,25 @@ function PerformanceChartHome({
               backgroundColor: "#fff",
               border: "1px solid #ccc",
               borderRadius: "4px",
-              padding: "10px",
+              padding: "8px",
+              fontSize: isMobile ? "11px" : "12px",
             }}
           />
           <Legend
-            wrapperStyle={{ paddingTop: "20px" }}
-            formatter={(value) => `${value} Performance`}
+            wrapperStyle={{
+              paddingTop: isMobile ? "10px" : "20px",
+              fontSize: isMobile ? "11px" : "12px",
+            }}
+            formatter={(value) => (isMobile ? value : `${value} Performance`)}
           />
 
           <ReferenceLine
             y={0}
             stroke="#999"
             strokeDasharray="5 5"
-            label={{ value: "", position: "right", fill: "#999" }}
+            label={
+              !isMobile ? { value: "", position: "right", fill: "#999" } : undefined
+            }
           />
 
           <Line
@@ -166,7 +194,7 @@ function PerformanceChartHome({
             stroke="#3b41d3"
             dot={false}
             name={symbol1}
-            strokeWidth={2.5}
+            strokeWidth={strokeWidth}
             isAnimationActive={true}
           />
 
@@ -176,7 +204,7 @@ function PerformanceChartHome({
             stroke="#35c55b"
             dot={false}
             name="BTC + ETH + SOL"
-            strokeWidth={2.5}
+            strokeWidth={strokeWidth}
             isAnimationActive={true}
           />
         </LineChart>

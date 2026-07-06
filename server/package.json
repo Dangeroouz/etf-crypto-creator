@@ -1,7 +1,7 @@
 {
   "name": "etf-crypto-server",
   "version": "1.0.0",
-  "description": "Backend server for ETF Crypto Creator with AlphaVantage integration",
+  "description": "Backend server for ETF Crypto Creator",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -10,8 +10,7 @@
   },
   "keywords": [
     "etf",
-    "crypto",
-    "alphavantage"
+    "crypto"
   ],
   "author": "",
   "license": "ISC",

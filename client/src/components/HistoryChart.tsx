@@ -22,6 +22,13 @@ function HistoryChart({ symbol, symbol2, days = 1095 }: { symbol: string; symbol
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -51,33 +58,41 @@ function HistoryChart({ symbol, symbol2, days = 1095 }: { symbol: string; symbol
   if (error) return <div style={{ color: "red", textAlign: "center", padding: "20px" }}>{error}</div>;
   if (data.length === 0) return <div style={{ textAlign: "center", padding: "20px" }}>No data available</div>;
 
+  const isMobile = windowWidth < 640;
+  const chartHeight = isMobile ? 250 : 400;
+  const leftMargin = isMobile ? -20 : 0;
+  const tickFontSize = isMobile ? 8 : 12;
+  const minTickGap = isMobile ? 30 : 0;
+
   return (
     <div style={{ width: "90%", margin: "30px auto" }}>
-      <h2>{symbol} vs {symbol2} - Historical Price Chart</h2>
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+      <h2 style={{ fontSize: isMobile ? "16px" : "20px" }}>{symbol} vs {symbol2} - Historical Price Chart</h2>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <LineChart data={data} margin={{ top: 5, right: 10, left: leftMargin, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="date" 
-            tick={{ fontSize: 12 }}
-            interval={Math.floor(data.length / 10) || 0}
+            tick={{ fontSize: tickFontSize }}
+            interval={Math.floor(data.length / (isMobile ? 5 : 10)) || 0}
+            minTickGap={minTickGap}
           />
-          <YAxis />
+          <YAxis tick={{ fontSize: tickFontSize }} />
           <Tooltip 
             formatter={(value) => {
               const v = typeof value === "number" ? value : Number(value as any);
               return `$${Number(v).toFixed(2)}`;
             }}
             labelFormatter={(label) => `Date: ${label}`}
+            contentStyle={{ fontSize: isMobile ? "11px" : "12px" }}
           />
-          <Legend />
+          <Legend wrapperStyle={{ fontSize: isMobile ? "11px" : "12px" }} />
           <Line
             type="monotone"
             dataKey={`${symbol}_close`}
             stroke="#8884d8"
             dot={false}
             name={`${symbol} Close Price`}
-            strokeWidth={2}
+            strokeWidth={isMobile ? 1.5 : 2}
           />
           <Line
             type="monotone"
@@ -85,11 +100,11 @@ function HistoryChart({ symbol, symbol2, days = 1095 }: { symbol: string; symbol
             stroke="#82ca9d"
             dot={false}
             name={`${symbol2} Close Price`}
-            strokeWidth={2}
+            strokeWidth={isMobile ? 1.5 : 2}
           />
         </LineChart>
       </ResponsiveContainer>
-      <p style={{ textAlign: "center", color: "#666", marginTop: "20px" }}>
+      <p style={{ textAlign: "center", color: "#666", marginTop: "20px", fontSize: isMobile ? "12px" : "14px" }}>
         Data points: {data.length} | Period: {data[0]?.date} to {data[data.length - 1]?.date}
       </p>
     </div>

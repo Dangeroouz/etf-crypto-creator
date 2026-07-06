@@ -80,21 +80,21 @@ const StepTwo = () => {
           {total > 100 && (<span className="text-red-600"> (Exceeds 100%)</span>)}
         </p>
       </div>
-      <div className="grid grid-cols-12 gap-4 text-sm text-gray-700 pb-2 border-gray-200 border-b mb-4 px-2">
-        <div className="col-span-5">Cryptocurrency</div>
+      <div className="grid grid-cols-12 gap-4 text-sm text-gray-700 border-gray-200 border-b mb-4 p-2">
+        <div className="col-span-4">Currency</div>
         <div className="col-span-3">Weight (%)</div>
-        <div className="col-span-2 text-right">Price</div>
-        <div className="col-span-2 text-right">24h Change</div>
+        <div className="sm:col-span-3 col-span-4 text-right">Price</div>
+        <div className="hidden sm:block col-span-2 text-right">24h Change</div>
       </div>
       {selectedCryptos.map((symbol, index) => (
-        <div className="grid grid-cols-12 gap-4 items-center py-3 bg-gray-50 mb-2 px-4 rounded-lg" key={index}>
-          <div className="col-span-5">
+        <div className="grid grid-cols-12 gap-4 items-center py-3 bg-gray-50 mb-2 px-2 sm:px-4 rounded-lg" key={index}>
+          <div className="col-span-4">
             <div key={symbol} className="flex items-start gap-2">
               {(() => {
                 const Icon = tokenIcons[symbol];
                 return Icon ? (
                   <Icon
-                    className="bg-linear-to-br from-indigo-100 to-indigo-50 rounded-full"
+                    className="hidden sm:block bg-linear-to-br from-indigo-100 to-indigo-50 rounded-full"
                     variant="mono"
                     size={48}
                     color="#151515ff"
@@ -129,7 +129,7 @@ const StepTwo = () => {
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-3 col-span-4">
             {cryptoData.find((c) => c.symbol === symbol) ? (
               <p className="text-right">
                 ${cryptoData.find((c) => c.symbol === symbol)?.price.toFixed(2)}
@@ -138,7 +138,7 @@ const StepTwo = () => {
               <p className="text-right">--</p>
             )}
           </div>
-          <div className="col-span-2">
+          <div className="hidden sm:block col-span-2">
             {cryptoData.find((c) => c.symbol === symbol) ? (
               <p
                 className="text-right flex items-center justify-end"

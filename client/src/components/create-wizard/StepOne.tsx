@@ -33,7 +33,7 @@ const StepOne = () => {
           >
             <div className="flex items-center justify-between mb-2 border-b border-black/10 pb-4">
               <div className="flex gap-4 ">
-                {(() => {
+                <div className="sm:flex sm:gap-2">{(() => {
                   const Icon = tokenIcons[allCrypto[index].symbol];
                   return Icon ? (
                     <Icon
@@ -45,7 +45,8 @@ const StepOne = () => {
                   ) : null;
                 })()}
                 <h2 className="text-md">{allCrypto[index].name}</h2>
-                <h3 className="text-xs font-semibold text-black border h-fit rounded-lg px-2 py-1 border-black/20">
+                </div>
+                <h3 className="hidden sm:block text-xs font-semibold text-black border h-fit rounded-lg px-2 py-1 border-black/20">
                   {crypto.symbol}
                 </h3>
               </div>

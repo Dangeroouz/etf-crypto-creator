@@ -462,13 +462,23 @@ export async function getPortfolioPNL(
 ): Promise<PortfolioPNL> {
   try {
     console.log(`[PortfolioPNL] Calculating for:`, { symbols, weights, initialInvestment, createdAt });
+    console.log(`[PortfolioPNL] API_URL: ${API_URL}`);
 
     const historicalRequests = symbols.map(s => getHistoricalData(s, 1825));
     
     const liveRequests = symbols.map(s => 
-      fetch(`${API_URL}/price/${s}`)
-        .then(r => r.ok ? r.json() : null)
-        .catch(() => null)
+      fetch(`${API_URL}/api/price/${s}`)
+        .then(r => {
+          if (!r.ok) {
+            console.warn(`[PortfolioPNL] Failed to fetch live price for ${s}: ${r.status}`);
+            return null;
+          }
+          return r.json();
+        })
+        .catch(err => {
+          console.warn(`[PortfolioPNL] Error fetching live price for ${s}:`, err.message);
+          return null;
+        })
     );
 
     const [historicalResponses, liveResponses] = await Promise.all([
@@ -547,7 +557,7 @@ export async function getPortfolioPNL(
         // Fallback to last historical data point
         const todayPriceData = priceData[symbol][priceData[symbol].length - 1];
         priceToday = todayPriceData.close;
-        console.log(`[PortfolioPNL] Using fallback price for ${symbol}: $${priceToday}`);
+        console.log(`[PortfolioPNL] Live price not available for ${symbol}, using fallback historical price: $${priceToday}`);
       }
 
       console.log(`[PortfolioPNL] ${symbol}: Creation=$${priceAtCreation}, Today=$${priceToday}, Change=${((priceToday - priceAtCreation) / priceAtCreation * 100).toFixed(2)}%`);

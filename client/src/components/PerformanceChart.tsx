@@ -33,6 +33,13 @@ function PerformanceChart({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   useEffect(() => {
     setLoading(true);
 
@@ -95,25 +102,34 @@ function PerformanceChart({
       </div>
     );
 
+  const isMobile = windowWidth < 640;
+  const chartHeight = isMobile ? 250 : 450;
+  const leftMargin = isMobile ? -20 : 0;
+  const tickFontSize = isMobile ? 8 : 12;
+  const minTickGap = isMobile ? 30 : 0;
+  const strokeWidth = isMobile ? 1.5 : 2.5;
+
   return (
-    <div style={{ width: "100%", margin: "30px auto", padding: "20px" }}>
-      <ResponsiveContainer width="100%" height={450}>
+    <div style={{ width: "100%", margin: "30px auto", padding: isMobile ? "10px" : "20px" }}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <LineChart
           data={data}
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+          margin={{ top: 5, right: 10, left: leftMargin, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 12 }}
-            interval={Math.floor(data.length / 10) || 0}
+            tick={{ fontSize: tickFontSize }}
+            interval={Math.floor(data.length / (isMobile ? 5 : 10)) || 0}
+            minTickGap={minTickGap}
           />
           <YAxis
-            label={{
+            tick={{ fontSize: tickFontSize }}
+            label={!isMobile ? {
               value: "Performance (%)",
               angle: -90,
               position: "insideLeft",
-            }}
+            } : undefined}
             tickFormatter={(value) => `${value}%`}
           />
           <Tooltip
@@ -133,19 +149,20 @@ function PerformanceChart({
               backgroundColor: "#fff",
               border: "1px solid #ccc",
               borderRadius: "4px",
-              padding: "10px",
+              padding: "8px",
+              fontSize: isMobile ? "11px" : "12px",
             }}
           />
           <Legend
-            wrapperStyle={{ paddingTop: "20px" }}
-            formatter={(value) => `${value} Performance`}
+            wrapperStyle={{ paddingTop: "10px", fontSize: isMobile ? "11px" : "12px" }}
+            formatter={(value) => `${value} ${!isMobile ? "Performance" : "Perf"}`}
           />
 
           <ReferenceLine
             y={0}
             stroke="#999"
             strokeDasharray="5 5"
-            label={{ value: "Baseline (0%)", position: "right", fill: "#999" }}
+            label={!isMobile ? { value: "Baseline (0%)", position: "right", fill: "#999" } : undefined}
           />
 
           <Line
@@ -154,7 +171,7 @@ function PerformanceChart({
             stroke="#3b41d3"
             dot={false}
             name={symbol1}
-            strokeWidth={2.5}
+            strokeWidth={strokeWidth}
             isAnimationActive={true}
           />
 
@@ -164,7 +181,7 @@ function PerformanceChart({
             stroke="#35c55b"
             dot={false}
             name={symbol2}
-            strokeWidth={2.5}
+            strokeWidth={strokeWidth}
             isAnimationActive={true}
           />
         </LineChart>
