@@ -46,13 +46,7 @@ export const Settings = () => {
                 )}
               </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold">Appearance</h2>
-              <p className="text-gray-600 text-sm">
-                Customize the look and feel of the application.
-              </p>
-              
-            </div>
+            
             
 
             {/* Logout Confirmation Modal */}

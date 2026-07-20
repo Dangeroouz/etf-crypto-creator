@@ -21,8 +21,14 @@ function App() {
     const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
 useEffect(() => {
-  fetchCrypto();
-  verifyToken();
+  void fetchCrypto();
+  void verifyToken();
+
+  const interval = window.setInterval(() => {
+    void fetchCrypto();
+  }, 60000);
+
+  return () => window.clearInterval(interval);
 }, [fetchCrypto, verifyToken]);
 
   return (
@@ -30,7 +36,7 @@ useEffect(() => {
     <RouteTitleUpdater />
     {!isAuthPage && <Navbar />}
 
-    <div className={isAuthPage ? "flex-1 flex items-center justify-center" : "flex-grow container mx-auto p-4"}>
+    <div className={isAuthPage ? "flex-1 flex items-center justify-center" : "grow container mx-auto p-4"}>
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />

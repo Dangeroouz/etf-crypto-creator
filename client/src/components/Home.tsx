@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCryptoStore } from "../store/cryptoStore";
-import { allCrypto} from "../store/cryptoStore";
+import { allCrypto } from "../store/cryptoStore";
 import { tokenIcons } from "../store/cryptoIcons";
 import useAuthStore from "../store/authStore";
 
@@ -11,6 +12,7 @@ export const Home = () => {
   const navigate = useNavigate();
   const cryptoData = useCryptoStore((s) => s.crypto);
   const { isAuthenticated } = useAuthStore();
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
 
   const handleCreateClick = () => {
     if (isAuthenticated) {
@@ -27,6 +29,18 @@ export const Home = () => {
       navigate("/login");
     }
   };
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const visibleCryptos = (isMobile ? cryptoData.slice(0, 4) : cryptoData).map((crypto) => {
+    const meta = allCrypto.find((item) => item.symbol === crypto.symbol) ?? allCrypto[0];
+    return { ...crypto, meta };
+  });
   
   return (
     <div className="min-h-screen sm:p-8">
@@ -88,46 +102,51 @@ export const Home = () => {
         <div className="mt-8">
           <h2 className="text-2xl text-gray-800">Trending Cryptocurrencies</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            {cryptoData.map((crypto, index) => (
-              
-              <div
-                key={crypto.symbol}
-                className={`bg-white p-4 rounded-xl border border-black/10 hover:shadow-lg transition-shadow duration-300 ${index >= 4 ? "hidden sm:block" : ""}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-2">
-                    {(() => {
-                      const Icon = tokenIcons[allCrypto[index].symbol];
-                      return Icon ? (
-                        <Icon
-                          className="bg-linear-to-br from-indigo-100 to-indigo-50 rounded-full"
-                          variant="mono"
-                          size={48}
-                          color="#151515ff"
-                        />
-                      ) : null;
-                    })()}
+            {visibleCryptos.map((crypto) => {
+              const price = typeof crypto.price === "number" ? crypto.price : 0;
+              const change = typeof crypto.priceChangePercent24h === "number" ? crypto.priceChangePercent24h : 0;
+              const isPositive = change >= 0;
+
+              return (
+                <div
+                  key={crypto.symbol}
+                  className="bg-white p-4 rounded-xl border border-black/10 hover:shadow-lg transition-shadow duration-300"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-2">
+                      {(() => {
+                        const Icon = tokenIcons[crypto.meta.symbol];
+                        return Icon ? (
+                          <Icon
+                            className="bg-linear-to-br from-indigo-100 to-indigo-50 rounded-full"
+                            variant="mono"
+                            size={48}
+                            color="#151515ff"
+                          />
+                        ) : null;
+                      })()}
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-lg font-semibold text-gray-800">
+                        {crypto.meta.name}
+                      </p>
+                      <p className="text-sm text-gray-600">{crypto.symbol}</p>
+                    </div>
                   </div>
-                  <div className="mb-2">
-                    <p className="text-lg font-semibold text-gray-800">
-                      {allCrypto[index].name}
-                    </p>
-                    <p className="text-sm text-gray-600">{crypto.symbol}</p>
-                  </div>
+                  <p className="text-black-600 text-bold text-xl mt-2 pl-2">
+                    ${price.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600 flex align-center" style={{
+                    color: isPositive ? "green" : "red"
+                  }}>
+                    <span>
+                      {isPositive ? <ArrowUpRight/> : <ArrowDownRight/>}
+                    </span>
+                    {change.toFixed(2)}%
+                  </p>
                 </div>
-                <p className="text-black-600 text-bold text-xl mt-2 pl-2">
-                  ${crypto.price.toFixed(2)}
-                </p>
-                <p className="text-sm text-gray-600 flex align-center" style={{
-                  color: crypto.priceChangePercent24h.toString().startsWith("-") ? "red" : "green"
-                }}> 
-                  <span>
-                    {crypto.priceChangePercent24h.toString().startsWith("-") ? <ArrowDownRight/> : <ArrowUpRight/>}
-                  </span>
-                  {crypto.priceChangePercent24h?.toFixed(2) ?? "--"}%
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         

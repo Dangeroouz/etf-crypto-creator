@@ -95,14 +95,13 @@ export const useSelectedCryptos = create<SelectedCryptoStore>((set) => ({
 export const useCryptoStore = create<CryptoStore>((set) => ({
   crypto: [],
   fetchCrypto: async () => {
-  const responses = await Promise.all(
-    allCrypto.map((crypto) =>
-      axios.get(`${API_URL}/api/crypto/${crypto.symbol}`)
-    )
-  );
+    const responses = await Promise.all(
+      allCrypto.map((crypto) =>
+        axios.get(`${API_URL}/api/crypto/${crypto.symbol}`)
+      )
+    );
 
-  const merged = responses.map(r => r.data);
-
-  set({ crypto: merged });
-},
+    const merged = responses.map((r) => r.data);
+    set({ crypto: merged });
+  },
 }));

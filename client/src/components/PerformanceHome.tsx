@@ -42,26 +42,34 @@ function PerformanceChartHome({
   useEffect(() => {
     setLoading(true);
 
-    Promise.all([
-      axios.get<ApiHistoryItem[]>(
-        `${API_URL}/api/history/${symbol1}?days=${days}`
-      ),
-      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/BTC?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/ETH?days=${days}`),
-      axios.get<ApiHistoryItem[]>(`${API_URL}/api/history/SOL?days=${days}`),
-    ])
-      .then(([res1, btcData, ethData, solData]) => {
-        const basePrice1 = res1.data[0].close;
-        const baseBTC = btcData.data[0].close;
-        const baseETH = ethData.data[0].close;
-        const baseSOL = solData.data[0].close;
+    const symbols = [symbol1, "BTC", "ETH", "SOL"].filter((value, index, array) => array.indexOf(value) === index);
 
-        const performanceData: PerformancePoint[] = res1.data.map(
+    axios
+      .get<Record<string, ApiHistoryItem[]>>(
+        `${API_URL}/api/history/compare?symbols=${symbols.join(",")}&days=${days}`
+      )
+      .then((res) => {
+        const seriesMap = res.data;
+        const primarySeries = seriesMap[symbol1] || [];
+        const btcSeries = seriesMap.BTC || [];
+        const ethSeries = seriesMap.ETH || [];
+        const solSeries = seriesMap.SOL || [];
+
+        if (!primarySeries.length) {
+          throw new Error("No data available for selected symbol");
+        }
+
+        const basePrice1 = primarySeries[0].close;
+        const baseBTC = btcSeries[0]?.close || 1;
+        const baseETH = ethSeries[0]?.close || 1;
+        const baseSOL = solSeries[0]?.close || 1;
+
+        const performanceData: PerformancePoint[] = primarySeries.map(
           (item, index) => {
             const price1 = item.close;
-            const priceBTC = btcData.data[index]?.close || 0;
-            const priceETH = ethData.data[index]?.close || 0;
-            const priceSOL = solData.data[index]?.close || 0;
+            const priceBTC = btcSeries[index]?.close || 0;
+            const priceETH = ethSeries[index]?.close || 0;
+            const priceSOL = solSeries[index]?.close || 0;
 
             const performance1 = ((price1 - basePrice1) / basePrice1) * 100;
             const performanceMix =
@@ -83,7 +91,6 @@ function PerformanceChartHome({
         );
 
         setData(performanceData);
-
         setError(null);
       })
       .catch((err) => {

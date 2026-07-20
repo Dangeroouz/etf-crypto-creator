@@ -465,18 +465,18 @@ export async function getPortfolioPNL(
     console.log(`[PortfolioPNL] API_URL: ${API_URL}`);
 
     const historicalRequests = symbols.map(s => getHistoricalData(s, 1825));
-    
-    const liveRequests = symbols.map(s => 
-      fetch(`${API_URL}/api/price/${s}`)
+
+    const liveRequests = symbols.map(s =>
+      fetch(`${API_URL}/api/crypto/${s}`)
         .then(r => {
           if (!r.ok) {
-            console.warn(`[PortfolioPNL] Failed to fetch live price for ${s}: ${r.status}`);
+            console.warn(`[PortfolioPNL] Failed to fetch market data for ${s}: ${r.status}`);
             return null;
           }
           return r.json();
         })
         .catch(err => {
-          console.warn(`[PortfolioPNL] Error fetching live price for ${s}:`, err.message);
+          console.warn(`[PortfolioPNL] Error fetching market data for ${s}:`, err.message);
           return null;
         })
     );
@@ -488,11 +488,16 @@ export async function getPortfolioPNL(
 
     const priceData: { [key: string]: DailyPrice[] } = {};
     const livePrices: { [key: string]: number } = {};
+    const liveMarketData: { [key: string]: { price: number; priceChangePercent24h: number } } = {};
 
     for (let i = 0; i < symbols.length; i++) {
       priceData[symbols[i]] = historicalResponses[i];
       if (liveResponses[i] && liveResponses[i].price) {
         livePrices[symbols[i]] = liveResponses[i].price;
+        liveMarketData[symbols[i]] = {
+          price: liveResponses[i].price,
+          priceChangePercent24h: Number(liveResponses[i].priceChangePercent24h || 0),
+        };
         console.log(`[PortfolioPNL] Live price for ${symbols[i]}: $${livePrices[symbols[i]]}`);
       }
     }
@@ -562,17 +567,9 @@ export async function getPortfolioPNL(
 
       console.log(`[PortfolioPNL] ${symbol}: Creation=$${priceAtCreation}, Today=$${priceToday}, Change=${((priceToday - priceAtCreation) / priceAtCreation * 100).toFixed(2)}%`);
 
-      // Get 24h change from Binance API
-      let change24h = 0;
-      try {
-        const statsResponse = await fetch(`${API_URL}/api/stats/${symbol}`);
-        if (statsResponse.ok) {
-          const stats = await statsResponse.json();
-          change24h = parseFloat(stats.priceChangePercent24h) || 0;
-        }
-      } catch (err) {
-        console.warn(`[PortfolioPNL] Could not fetch 24h data for ${symbol}`);
-      }
+      // Get 24h change from combined market-data response
+      const marketData = liveMarketData[symbol];
+      const change24h = marketData?.priceChangePercent24h ?? 0;
 
       assetPrices.push({
         symbol,
