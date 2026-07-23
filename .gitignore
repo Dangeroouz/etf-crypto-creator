@@ -1,1 +1,10 @@
 /node_modules
+
+# Environment files are centralized in the repository root.
+.env
+.env.local
+.env.docker
+**/.env
+**/.env.local
+**/.env.docker
+!.env.example

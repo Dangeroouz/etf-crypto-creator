@@ -5,11 +5,15 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import Redis from "ioredis";
+import { fileURLToPath } from "node:url";
 import { connectDB } from "./config/database.js";
 import User from "./models/User.js";
 import Index from "./models/Index.js";
 
-dotenv.config();
+// Environment files live in the repository root. Docker injects its variables
+// through Compose, while a local `npm run dev` always uses `.env.local`.
+const localEnvPath = fileURLToPath(new URL("../.env.local", import.meta.url));
+dotenv.config({ path: process.env.ENV_FILE || localEnvPath });
 
 const app = express();
 const PORT = process.env.PORT || 3333;
