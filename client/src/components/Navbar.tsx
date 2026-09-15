@@ -40,7 +40,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-1 grpup cursor-pointer">
             <span className="text-lg sm:text-xl md:text-2xl font-medium">
               <Link to="/" className="text-gray-500 text-lg font-semibold">
-                Crypto Index Builder
+                Crypto Index Creator
               </Link>
             </span>
           </div>

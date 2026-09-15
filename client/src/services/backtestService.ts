@@ -502,11 +502,17 @@ export async function getPortfolioPNL(
       }
     }
 
-    // Parse creation date
-    const createdDateStr = new Date(createdAt).toISOString().split('T')[0]; // "YYYY-MM-DD"
-    const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+    // Parse creation date and anchor the calculation to the actual creation timestamp.
+    // Using the raw date string (start of day) incorrectly counts the entire creation day,
+    // which makes a freshly created index appear profitable or loss-making immediately.
+    const createdAtDate = new Date(createdAt);
+    const createdDateStr = createdAtDate.toISOString().split('T')[0];
+    const todayStr = new Date().toISOString().split('T')[0];
+    const nextDayAfterCreation = new Date(createdAtDate);
+    nextDayAfterCreation.setDate(nextDayAfterCreation.getDate() + 1);
+    nextDayAfterCreation.setHours(0, 0, 0, 0);
 
-    console.log(`[PortfolioPNL] Date range: ${createdDateStr} to ${todayStr}`);
+    console.log(`[PortfolioPNL] Date range anchored to creation time: ${createdAtDate.toISOString()} -> ${todayStr}`);
 
     const synchronizedData: { [key: string]: DailyPrice[] } = {};
     for (const symbol of symbols) {
@@ -514,9 +520,11 @@ export async function getPortfolioPNL(
       if (!data || data.length === 0) {
         throw new Error(`No data for ${symbol}`);
       }
-      synchronizedData[symbol] = data.filter(d => d.date >= createdDateStr);
+
+      synchronizedData[symbol] = data.filter(d => new Date(d.date).getTime() >= nextDayAfterCreation.getTime());
       if (synchronizedData[symbol].length === 0) {
-        throw new Error(`No data available for ${symbol} on or after ${createdDateStr}`);
+        const fallback = data[data.length - 1];
+        synchronizedData[symbol] = [fallback];
       }
     }
 
@@ -548,10 +556,13 @@ export async function getPortfolioPNL(
       const weight = weights[i];
       const data = priceData[symbol];
 
-      // Find price at creation date
-      const creationPriceData = data.find(d => d.date >= createdDateStr);
+      // Use the latest known close at or before the exact creation timestamp.
+      const creationPriceData = [...data]
+        .reverse()
+        .find(d => new Date(d.date).getTime() <= createdAtDate.getTime()) ?? data[0];
+
       if (!creationPriceData) {
-        throw new Error(`No data available for ${symbol} on or after ${createdDateStr}`);
+        throw new Error(`No data available for ${symbol} before ${createdAtDate.toISOString()}`);
       }
       const priceAtCreation = creationPriceData.close;
 

@@ -3,8 +3,8 @@ db = db.getSiblingDB('etf-crypto');
 
 // Create application user for etf-crypto database
 db.createUser({
-  user: 'crypto-user',
-  pwd: 'crypto-pass123',
+  user: 'change-me-user',
+  pwd: 'change-me-password',
   roles: [
     {
       role: 'readWrite',
@@ -18,4 +18,4 @@ db.createCollection('users');
 db.createCollection('portfolios');
 db.createCollection('transactions');
 
-print('Database etf-crypto initialized with user crypto-user');
+print('Database etf-crypto initialized with a sample app user. Update credentials in your local environment before production use.');

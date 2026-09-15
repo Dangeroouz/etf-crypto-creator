@@ -1,0 +1,29 @@
+{
+  "name": "etf-crypto-creator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "init-mongo.js",
+  "scripts": {
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build:client": "npm --prefix client run build",
+    "test": "node --test server/tests/*.test.js",
+    "lint:client": "npm --prefix client run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dangeroouz/etf-crypto-creator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Dangeroouz/etf-crypto-creator/issues"
+  },
+  "homepage": "https://github.com/Dangeroouz/etf-crypto-creator#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0"
+  }
+}
