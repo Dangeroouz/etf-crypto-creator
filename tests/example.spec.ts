@@ -1,24 +1,25 @@
 import { test, expect } from '@playwright/test';
 
+async function registerUser(page: import('@playwright/test').Page) {
+  const email = `playwright.${Date.now()}.${Math.random().toString(36).slice(2)}@example.com`;
+  const password = 'Password123';
+
+  await page.goto('/register');
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').nth(0).fill(password);
+  await page.locator('input[type="password"]').nth(1).fill(password);
+  await page.getByRole('button', { name: /Register/i }).click();
+  await expect(page).toHaveURL(/\/my-indices(?:\/)?$/, { timeout: 30000 });
+}
+
 test.describe('Index lifecycle', () => {
-  test('logs in, creates an index with valid fields, checks metrics, and deletes it', async ({ page }) => {
+  test('registers, creates an index with valid fields, checks metrics, and deletes it', async ({ page }) => {
     const uniqueSuffix = Date.now();
     const indexName = `Playwright Test Index ${uniqueSuffix}`;
 
-    await page.goto('http://localhost/login');
-    await page.locator('input[type="email"]').fill('12345678@gmail.com');
-    await page.locator('input[type="password"]').fill('12345678');
+    await registerUser(page);
 
-    const loginResponse = page.waitForResponse(
-      (response) => response.url().includes('/api/auth/login') && response.status() === 200,
-      { timeout: 30000 }
-    );
-
-    await page.getByRole('button', { name: /Login/i }).click();
-    await loginResponse;
-    await expect(page).toHaveURL(/\/my-indices(?:\/)?$/, { timeout: 30000 });
-
-    await page.goto('http://localhost/create');
+    await page.goto('/create');
     await expect(page).toHaveURL(/\/create$/, { timeout: 15000 });
 
     await page.locator('text=Bitcoin').first().click();
@@ -76,24 +77,13 @@ test.describe('Index lifecycle', () => {
     await expect(page.getByText(indexName)).not.toBeVisible({ timeout: 20000 });
   });
 
-  test('logs in and creates an index with all available crypto assets', async ({ page }) => {
+  test('registers and creates an index with all available crypto assets', async ({ page }) => {
     const uniqueSuffix = Date.now();
     const indexName = `All Crypto Index ${uniqueSuffix}`;
 
-    await page.goto('http://localhost/login');
-    await page.locator('input[type="email"]').fill('12345678@gmail.com');
-    await page.locator('input[type="password"]').fill('12345678');
+    await registerUser(page);
 
-    const loginResponse = page.waitForResponse(
-      (response) => response.url().includes('/api/auth/login') && response.status() === 200,
-      { timeout: 30000 }
-    );
-
-    await page.getByRole('button', { name: /Login/i }).click();
-    await loginResponse;
-    await expect(page).toHaveURL(/\/my-indices(?:\/)?$/, { timeout: 30000 });
-
-    await page.goto('http://localhost/create');
+    await page.goto('/create');
     await expect(page).toHaveURL(/\/create$/, { timeout: 15000 });
 
     for (const symbol of ['Bitcoin', 'Ethereum', 'Solana', 'Cardano', 'Avalanche', 'Polkadot', 'Litecoin', 'Chainlink']) {
