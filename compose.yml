@@ -39,8 +39,14 @@ services:
     restart: unless-stopped
     ports:
       - "3333:3333"
-    env_file:
-      - .env
+    environment:
+      MONGODB_URI: ${MONGODB_URI:-mongodb://change-me-user:change-me-password@mongodb:27017/etf-crypto?authSource=admin}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET:-local-compose-secret}
+      PORT: ${PORT:-3333}
+      NODE_ENV: ${NODE_ENV:-development}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+      REDIS_TTL: ${REDIS_TTL:-300}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -58,8 +64,8 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_BASE_PATH: ${VITE_BASE_PATH}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3333}
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
     container_name: crypto-frontend
     restart: unless-stopped
     ports:
