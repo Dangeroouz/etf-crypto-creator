@@ -60,6 +60,10 @@ async function main(){
 
     const headers = { Authorization: `Bearer ${token}` };
 
+    await measureEndpoint('/health', async () => {
+      await axios.get(`${BASE}/health`);
+    });
+
     await measureEndpoint('/api/auth/verify', async () => {
       await axios.get(`${BASE}/api/auth/verify`, { headers });
     });
@@ -72,7 +76,7 @@ async function main(){
       await axios.get(`${BASE}/api/indices/${indexId}`, { headers });
     });
 
-    console.log('\nDone. Run server with and without REDIS_URL to compare.');
+    console.log('\nBenchmark completed. Use it to compare latency before/after changes such as Redis, caching, or DB tuning.');
   } catch (e) {
     console.error('Benchmark error:', e.response?.data || e.message || e);
     process.exit(1);

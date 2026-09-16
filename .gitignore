@@ -1,1 +1,26 @@
 /node_modules
+
+# Environment files are centralized in the repository root.
+.env
+.env.local
+.env.docker
+**/.env
+**/.env.local
+**/.env.docker
+!.env.example
+*.pem
+*.key
+
+# Build and editor artifacts
+.DS_Store
+.vscode/
+coverage/
+dist/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
