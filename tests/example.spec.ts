@@ -1,5 +1,44 @@
 import { test, expect } from '@playwright/test';
 
+async function mockMarketData(page: import('@playwright/test').Page) {
+  const today = new Date();
+  const history = Array.from({ length: 30 }, (_, index) => {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() - (29 - index));
+    const close = 100 + index;
+    return {
+      date: date.toISOString().slice(0, 10),
+      open: close,
+      high: close + 2,
+      low: close - 2,
+      close,
+      volume: 1000000,
+    };
+  });
+
+  await page.route('**/api/history/**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(history),
+    });
+  });
+
+  await page.route('**/api/crypto/**', async (route) => {
+    const symbol = route.request().url().split('/').pop()?.split('?')[0] ?? 'BTC';
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        symbol,
+        price: 130,
+        currentPrice: 130,
+        priceChangePercent24h: 1.5,
+      }),
+    });
+  });
+}
+
 async function registerUser(page: import('@playwright/test').Page) {
   const email = `playwright.${Date.now()}.${Math.random().toString(36).slice(2)}@example.com`;
   const password = 'Password123';
@@ -17,6 +56,7 @@ test.describe('Index lifecycle', () => {
     const uniqueSuffix = Date.now();
     const indexName = `Playwright Test Index ${uniqueSuffix}`;
 
+    await mockMarketData(page);
     await registerUser(page);
 
     await page.goto('/create');
@@ -81,6 +121,7 @@ test.describe('Index lifecycle', () => {
     const uniqueSuffix = Date.now();
     const indexName = `All Crypto Index ${uniqueSuffix}`;
 
+    await mockMarketData(page);
     await registerUser(page);
 
     await page.goto('/create');
